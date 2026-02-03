@@ -2,35 +2,46 @@
 // Role of the component: Button for adding product to the cart on the single product page
 // Name of the component: AddToCartSingleProductBtn.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <AddToCartSingleProductBtn product={product} quantityCount={quantityCount}  />
-// Input parameters: SingleProductBtnProps interface
-// Output: Button with adding to cart functionality
+// Version: 1.1 (PostHog tracking added)
 // *********************
+
 "use client";
-
-
 
 import React from "react";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
+import posthog from "posthog-js";
 
-
-
-const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtnProps) => {
+const AddToCartSingleProductBtn = ({
+  product,
+  quantityCount,
+}: SingleProductBtnProps) => {
   const { addToCart, calculateTotals } = useProductStore();
 
   const handleAddToCart = () => {
+    // 1️⃣ Business logic (unchanged)
     addToCart({
       id: product?.id.toString(),
       title: product?.title,
       price: product?.price,
       image: product?.mainImage,
-      amount: quantityCount
+      amount: quantityCount,
     });
+
     calculateTotals();
     toast.success("Product added to the cart");
+
+    // 2️⃣ Analytics (PostHog)
+    posthog.capture("add_to_cart", {
+      product_id: product?.id,
+      product_name: product?.title,
+      price: product?.price,
+      quantity_added: quantityCount,
+      value: product?.price * quantityCount,
+      source: "single_product_page",
+    });
   };
+
   return (
     <button
       onClick={handleAddToCart}
