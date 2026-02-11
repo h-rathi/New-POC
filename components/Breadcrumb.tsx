@@ -7,12 +7,16 @@
 
 "use client";
 
+
 import Link from "next/link";
 import React from "react";
 import { FaHouse } from "react-icons/fa6";
 import posthog from "posthog-js";
+import { useSession } from "next-auth/react";
+
 
 const Breadcrumb = () => {
+  const { data: session } = useSession();
   const trackBreadcrumbClick = (
     label: string,
     destination: string,
@@ -23,6 +27,10 @@ const Breadcrumb = () => {
       destination,
       position,
       component: "Breadcrumb",
+      sessionId: {
+  sessionId: (session as any)?.sessionId ?? null,
+  userId: session?.user?.id ?? null,
+},
     });
   };
 

@@ -96,19 +96,22 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as any).id;
         token.iat = Math.floor(Date.now() / 1000); // Issued at time
       }
-      
+
+      // Ensure a unique sessionId exists for every session
+      if (!token.sessionId) {
+        token.sessionId = nanoid();
+      }
+
       // Check if token is expired (15 minutes)
       if (token.iat) {
         const now = Math.floor(Date.now() / 1000);
         const tokenAge = now - (token.iat as number);
         const maxAge = 15 * 60; // 15 minutes
-        
         if (tokenAge > maxAge) {
           // Token expired, return empty object to force re-authentication
           return {};
         }
       }
-      
       return token;
     },
     async session({ session, token }) {
@@ -116,6 +119,8 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
       }
+      // Expose sessionId to the client
+      (session as any).sessionId = token.sessionId;
       return session;
     },
   },
