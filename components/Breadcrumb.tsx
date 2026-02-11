@@ -8,19 +8,37 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaHouse } from "react-icons/fa6";
 import posthog from "posthog-js";
 import { useSession } from "next-auth/react";
 
 const Breadcrumb = () => {
   const { data: session } = useSession();
+  const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
+
+  // Create guest session if user is not logged in
+  useEffect(() => {
+    if (!session) {
+      let guestId = localStorage.getItem("guestSessionId");
+
+      if (!guestId) {
+        guestId = crypto.randomUUID();
+        localStorage.setItem("guestSessionId", guestId);
+      }
+
+      setGuestSessionId(guestId);
+    }
+  }, [session]);
+
   const trackBreadcrumbClick = (
     label: string,
     destination: string,
     position: number
   ) => {
-    const effectiveSessionId = (session as any)?.sessionId ?? null;
+    const effectiveSessionId =
+      (session as any)?.sessionId ?? guestSessionId ?? null;
+
     const userId = session?.user?.id ?? null;
 
     posthog.capture("breadcrumb_clicked", {
