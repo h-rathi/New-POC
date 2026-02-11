@@ -7,13 +7,11 @@
 
 "use client";
 
-
 import Link from "next/link";
 import React from "react";
 import { FaHouse } from "react-icons/fa6";
 import posthog from "posthog-js";
 import { useSession } from "next-auth/react";
-
 
 const Breadcrumb = () => {
   const { data: session } = useSession();
@@ -22,15 +20,16 @@ const Breadcrumb = () => {
     destination: string,
     position: number
   ) => {
+    const effectiveSessionId = (session as any)?.sessionId ?? null;
+    const userId = session?.user?.id ?? null;
+
     posthog.capture("breadcrumb_clicked", {
       label,
       destination,
       position,
       component: "Breadcrumb",
-      sessionId: {
-  sessionId: (session as any)?.sessionId ?? null,
-  userId: session?.user?.id ?? null,
-},
+      sessionId: effectiveSessionId,
+      userId,
     });
   };
 

@@ -6,6 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/utils/db";
 import { nanoid } from "nanoid";
+import { cookies } from "next/headers";
 
 export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
@@ -119,8 +120,35 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
       }
+
       // Expose sessionId to the client
-      (session as any).sessionId = token.sessionId;
+      // Prefer token.sessionId (authenticated session); fallback to cookie-based guestSessionId
+      let effectiveSessionId: string | null = (token as any)?.sessionId ?? null;
+
+      if (!effectiveSessionId) {
+        try {
+          const cookieStore = cookies();
+          let guestSessionId = cookieStore.get("guestSessionId")?.value ?? null;
+
+          if (!guestSessionId) {
+            guestSessionId = nanoid();
+            // set cookie for 30 days
+            cookieStore.set({
+              name: "guestSessionId",
+              value: guestSessionId,
+              path: "/",
+              maxAge: 60 * 60 * 24 * 30,
+            } as any);
+          }
+
+          effectiveSessionId = guestSessionId;
+        } catch (err) {
+          // If cookie APIs unavailable for any reason, leave effectiveSessionId as null
+          effectiveSessionId = null;
+        }
+      }
+
+      (session as any).sessionId = effectiveSessionId;
       return session;
     },
   },
