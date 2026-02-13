@@ -28,10 +28,11 @@ model Product {
   customerOrders customer_order_product[]
   Wishlist       Wishlist[]
 
-  merchantId     String
-  merchant       Merchant @relation(fields: [merchantId], references: [id])
+  merchantId      String
+  merchant        Merchant           @relation(fields: [merchantId], references: [id])
   // Back relation for bulk upload items
-  bulkUploadItems bulk_upload_item[]      @relation("ProductBulkItems")
+  bulkUploadItems bulk_upload_item[] @relation("ProductBulkItems")
+  CartItem        CartItem[]
 }
 
 model Image {
@@ -41,14 +42,15 @@ model Image {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String?
-  role          String?        @default("user")
-  Wishlist      Wishlist[]
-  notifications Notification[]
+  id                String              @id @default(uuid())
+  email             String              @unique
+  password          String?
+  role              String?             @default("user")
+  Wishlist          Wishlist[]
+  notifications     Notification[]
   // Back relation for bulk upload batches
   bulkUploadBatches bulk_upload_batch[] @relation("UserBatches")
+  Cart              Cart[]
 }
 
 model Customer_order {
@@ -125,6 +127,7 @@ model Notification {
   @@index([userId, type])
   @@index([createdAt])
 }
+
 model Merchant {
   id          String   @id @default(uuid())
   name        String
@@ -141,40 +144,40 @@ model Merchant {
 }
 
 model bulk_upload_batch {
-  id         String              @id @default(uuid())
+  id         String             @id @default(uuid())
   fileName   String?
-  createdAt  DateTime            @default(now())
-  status     BulkUploadStatus    @default(PENDING)
-  itemCount  Int                 @default(0)
-  errorCount Int                 @default(0)
+  createdAt  DateTime           @default(now())
+  status     BulkUploadStatus   @default(PENDING)
+  itemCount  Int                @default(0)
+  errorCount Int                @default(0)
   items      bulk_upload_item[]
 
   // optional uploader link if you later associate sessions/users
   userId String?
-  user   User?                  @relation(name: "UserBatches", fields: [userId], references: [id])
+  user   User?   @relation(name: "UserBatches", fields: [userId], references: [id])
 }
 
 model bulk_upload_item {
-  id        String            @id @default(uuid())
-  batchId   String
-  batch     bulk_upload_batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  id      String            @id @default(uuid())
+  batchId String
+  batch   bulk_upload_batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   // created product reference
   productId String?
-  product   Product?          @relation(name: "ProductBulkItems", fields: [productId], references: [id], onDelete: SetNull)
+  product   Product? @relation(name: "ProductBulkItems", fields: [productId], references: [id], onDelete: SetNull)
 
   // snapshot fields for auditing and re-commit edits
-  title         String
-  slug          String
-  price         Int
-  manufacturer  String?
-  description   String?
-  mainImage     String?
-  categoryId    String
-  inStock       Int
+  title        String
+  slug         String
+  price        Int
+  manufacturer String?
+  description  String?
+  mainImage    String?
+  categoryId   String
+  inStock      Int
 
-  status        BulkUploadItemStatus @default(CREATED)
-  error         String?
+  status BulkUploadItemStatus @default(CREATED)
+  error  String?
 }
 
 enum BulkUploadStatus {
@@ -188,4 +191,53 @@ enum BulkUploadItemStatus {
   CREATED
   UPDATED
   ERROR
+}
+
+// Cart models inferred from UI and client-side store
+model Cart {
+  id     String  @id @default(uuid())
+  // Optional user association for logged-in users
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Token to associate anonymous/guest carts (e.g. cookie/session)
+  cartToken String? @unique
+
+  // Snapshot/computed fields (optional, useful for snapshots and querying)
+  currency String? @default("USD")
+  shipping Int? // store shipping in minor currency units (e.g. cents)
+  taxRate  Float? // stored as fraction (e.g. 0.2 for 20%)
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([cartToken])
+}
+
+model CartItem {
+  id     String @id @default(uuid())
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  // Optional product link; keep snapshot fields to avoid data loss if product changes
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  // Snapshot details (copied from Product at time of add-to-cart)
+  title     String
+  image     String?
+  unitPrice Int // price per unit in smallest currency unit (consistent with Product.price)
+  quantity  Int
+
+  // Optional metadata for variants/options
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@index([productId])
 }

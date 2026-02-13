@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import Providers from "@/Providers";
 import SessionTimeoutWrapper from "@/components/SessionTimeoutWrapper";
 import Script from "next/script";
+import CartSyncClient from "@/components/CartSyncClient";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -60,6 +61,7 @@ export default async function RootLayout({
         {/* End Google Tag Manager (noscript) */}
 
         <SessionProvider session={session}>
+          <CartSyncClient />
           <SessionTimeoutWrapper />
           <Header />
           <Providers>{children}</Providers>
