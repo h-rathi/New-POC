@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
+import posthog from "posthog-js";
 
 const CheckoutPage = () => {
   const { data: session } = useSession();
@@ -23,7 +24,7 @@ const CheckoutPage = () => {
     postalCode: "",
     orderNotice: "",
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { products, total, clearCart } = useProductStore();
   const router = useRouter();
@@ -31,59 +32,60 @@ const CheckoutPage = () => {
   // Add validation functions that match server requirements
   const validateForm = () => {
     const errors: string[] = [];
-    
+
     // Name validation
     if (!checkoutForm.name.trim() || checkoutForm.name.trim().length < 2) {
       errors.push("Name must be at least 2 characters");
     }
-    
+
     // Lastname validation
     if (!checkoutForm.lastname.trim() || checkoutForm.lastname.trim().length < 2) {
       errors.push("Lastname must be at least 2 characters");
     }
-    
+
     // Email validation
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!checkoutForm.email.trim() || !emailRegex.test(checkoutForm.email.trim())) {
       errors.push("Please enter a valid email address");
     }
-    
+
     // Phone validation (must be at least 10 digits)
-    const phoneDigits = checkoutForm.phone.replace(/[^0-9]/g, '');
+    const phoneDigits = checkoutForm.phone.replace(/[^0-9]/g, "");
     if (!checkoutForm.phone.trim() || phoneDigits.length < 10) {
       errors.push("Phone number must be at least 10 digits");
     }
-    
+
     // Company validation
     if (!checkoutForm.company.trim() || checkoutForm.company.trim().length < 5) {
       errors.push("Company must be at least 5 characters");
     }
-    
+
     // Address validation
     if (!checkoutForm.adress.trim() || checkoutForm.adress.trim().length < 5) {
       errors.push("Address must be at least 5 characters");
     }
-    
+
     // Apartment validation (updated to 1 character minimum)
     if (!checkoutForm.apartment.trim() || checkoutForm.apartment.trim().length < 1) {
       errors.push("Apartment is required");
     }
-    
+
     // City validation
     if (!checkoutForm.city.trim() || checkoutForm.city.trim().length < 5) {
       errors.push("City must be at least 5 characters");
     }
-    
+
     // Country validation
     if (!checkoutForm.country.trim() || checkoutForm.country.trim().length < 5) {
       errors.push("Country must be at least 5 characters");
     }
-    
+
     // Postal code validation
     if (!checkoutForm.postalCode.trim() || checkoutForm.postalCode.trim().length < 3) {
       errors.push("Postal code must be at least 3 characters");
     }
-    
+
     return errors;
   };
 
@@ -91,7 +93,7 @@ const CheckoutPage = () => {
     // Client-side validation first
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
-      validationErrors.forEach(error => {
+      validationErrors.forEach((error) => {
         toast.error(error);
       });
       return;
@@ -99,12 +101,20 @@ const CheckoutPage = () => {
 
     // Basic client-side checks for required fields (UX only)
     const requiredFields = [
-      'name', 'lastname', 'phone', 'email', 'company', 
-      'adress', 'apartment', 'city', 'country', 'postalCode'
+      "name",
+      "lastname",
+      "phone",
+      "email",
+      "company",
+      "adress",
+      "apartment",
+      "city",
+      "country",
+      "postalCode",
     ];
-    
-    const missingFields = requiredFields.filter(field => 
-      !checkoutForm[field as keyof typeof checkoutForm]?.trim()
+
+    const missingFields = requiredFields.filter(
+      (field) => !checkoutForm[field as keyof typeof checkoutForm]?.trim()
     );
 
     if (missingFields.length > 0) {
@@ -124,11 +134,24 @@ const CheckoutPage = () => {
 
     setIsSubmitting(true);
 
+    // Capture checkout initiated (non-PII)
+    try {
+      posthog.capture("checkout_initiated", {
+        products_count: products.length,
+        cart_value: total,
+        currency: "USD",
+        component: "CheckoutPage",
+      });
+    } catch (err) {
+      // don't block purchase if analytics fails
+      console.warn("PostHog capture failed (checkout_initiated):", err);
+    }
+
     try {
       console.log("🚀 Starting order creation...");
-      
+
       // Get user ID if logged in
-      let userId = null;
+      let userId: string | null = null;
       if (session?.user?.email) {
         try {
           console.log("🔍 Getting user ID for logged-in user:", session.user.email);
@@ -144,7 +167,7 @@ const CheckoutPage = () => {
           console.log("⚠️  Error getting user ID:", userError);
         }
       }
-      
+
       // Prepare the order data
       const orderData = {
         name: checkoutForm.name.trim(),
@@ -160,7 +183,7 @@ const CheckoutPage = () => {
         city: checkoutForm.city.trim(),
         country: checkoutForm.country.trim(),
         orderNotice: checkoutForm.orderNotice.trim(),
-        userId: userId // Add user ID for notifications
+        userId: userId, // Add user ID for notifications
       };
 
       console.log("📋 Order data being sent:", orderData);
@@ -172,29 +195,36 @@ const CheckoutPage = () => {
       console.log("  Status:", response.status);
       console.log("  Status Text:", response.statusText);
       console.log("  Response OK:", response.ok);
-      
+
       // Check if response is ok before parsing
       if (!response.ok) {
         console.error("❌ Response not OK:", response.status, response.statusText);
         const errorText = await response.text();
         console.error("Error response body:", errorText);
-        
+
         // Try to parse as JSON to get detailed error info
         try {
           const errorData = JSON.parse(errorText);
           console.error("Parsed error data:", errorData);
-          
+
           // Handle different error types
           if (response.status === 409) {
             // Duplicate order error
             toast.error(errorData.details || errorData.error || "Duplicate order detected");
+            // capture failure
+            try {
+              posthog.capture("checkout_failed", {
+                reason: "duplicate_order",
+                component: "CheckoutPage",
+              });
+            } catch (err) {}
             return; // Don't throw, just return to stop execution
           } else if (errorData.details && Array.isArray(errorData.details)) {
             // Validation errors
             errorData.details.forEach((detail: any) => {
               toast.error(`${detail.field}: ${detail.message}`);
             });
-          } else if (typeof errorData.details === 'string') {
+          } else if (typeof errorData.details === "string") {
             // Single error message in details
             toast.error(errorData.details);
           } else {
@@ -205,13 +235,20 @@ const CheckoutPage = () => {
           console.error("Could not parse error as JSON:", parseError);
           toast.error("Order creation failed. Please try again.");
         }
-        
+
+        // capture generic failure
+        try {
+          posthog.capture("checkout_failed", {
+            reason: `http_${response.status}`,
+            component: "CheckoutPage",
+          });
+        } catch (err) {}
         return; // Stop execution instead of throwing
       }
 
       const data = await response.json();
       console.log("✅ Parsed response data:", data);
-      
+
       const orderId: string = data.id;
       console.log("🆔 Extracted order ID:", orderId);
 
@@ -228,14 +265,32 @@ const CheckoutPage = () => {
         console.log(`🛍️ Adding product ${i + 1}/${products.length}:`, {
           orderId,
           productId: products[i].id,
-          quantity: products[i].amount
+          quantity: products[i].amount,
         });
-        
+
         await addOrderProduct(orderId, products[i].id, products[i].amount);
         console.log(`✅ Product ${i + 1} added successfully`);
       }
 
       console.log(" All products added successfully!");
+
+      // Capture purchase (non-PII — no address or personal fields)
+      try {
+        posthog.capture("purchase_completed", {
+          order_id: orderId,
+          total: total,
+          currency: "USD",
+          products: products.map((p: any) => ({
+            product_id: p.id,
+            quantity: p.amount,
+            price: p.price,
+          })),
+          user_id: userId || null,
+          component: "CheckoutPage",
+        });
+      } catch (err) {
+        console.warn("PostHog capture failed (purchase):", err);
+      }
 
       // Clear form and cart
       setCheckoutForm({
@@ -252,22 +307,30 @@ const CheckoutPage = () => {
         orderNotice: "",
       });
       clearCart();
-      
+
       // Refresh notification count if user is logged in
       try {
         // This will trigger a refresh of notifications in the background
-        window.dispatchEvent(new CustomEvent('orderCompleted'));
+        window.dispatchEvent(new CustomEvent("orderCompleted"));
       } catch (error) {
-        console.log('Note: Could not trigger notification refresh');
+        console.log("Note: Could not trigger notification refresh");
       }
-      
+
       toast.success("Order created successfully! You will be contacted for payment.");
       setTimeout(() => {
         router.push("/");
       }, 1000);
     } catch (error: any) {
       console.error("💥 Error in makePurchase:", error);
-      
+
+      // capture failure with generic message if available
+      try {
+        posthog.capture("checkout_failed", {
+          error: error?.message || String(error),
+          component: "CheckoutPage",
+        });
+      } catch (err) {}
+
       // Handle server validation errors
       if (error.response?.status === 400) {
         console.log(" Handling 400 error...");
@@ -297,18 +360,14 @@ const CheckoutPage = () => {
     }
   };
 
-  const addOrderProduct = async (
-    orderId: string,
-    productId: string,
-    productQuantity: number
-  ) => {
+  const addOrderProduct = async (orderId: string, productId: string, productQuantity: number) => {
     try {
       console.log("️ Adding product to order:", {
         customerOrderId: orderId,
         productId,
-        quantity: productQuantity
+        quantity: productQuantity,
       });
-      
+
       const response = await apiClient.post("/api/order-product", {
         customerOrderId: orderId,
         productId: productId,
@@ -316,7 +375,7 @@ const CheckoutPage = () => {
       });
 
       console.log("📡 Product order response:", response);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("❌ Product order failed:", response.status, errorText);
@@ -325,7 +384,6 @@ const CheckoutPage = () => {
 
       const data = await response.json();
       console.log("✅ Product order successful:", data);
-      
     } catch (error) {
       console.error("💥 Error creating product order:", error);
       throw error;
@@ -333,16 +391,28 @@ const CheckoutPage = () => {
   };
 
   useEffect(() => {
+    // Track checkout page view (non-PII)
+    try {
+      posthog.capture("checkout_viewed", {
+        products_count: products.length,
+        cart_value: total,
+        component: "CheckoutPage",
+      });
+    } catch (err) {
+      console.warn("PostHog capture failed (checkout_viewed):", err);
+    }
+
     if (products.length === 0) {
       toast.error("You don't have items in your cart");
       router.push("/cart");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="bg-white">
       <SectionTitle title="Checkout" path="Home | Cart | Checkout" />
-      
+
       <div className="hidden h-full w-1/2 bg-white lg:block" aria-hidden="true" />
       <div className="hidden h-full w-1/2 bg-gray-50 lg:block" aria-hidden="true" />
 
@@ -359,10 +429,7 @@ const CheckoutPage = () => {
               Order summary
             </h2>
 
-            <ul
-              role="list"
-              className="divide-y divide-gray-200 text-sm font-medium text-gray-900"
-            >
+            <ul role="list" className="divide-y divide-gray-200 text-sm font-medium text-gray-900">
               {products.map((product) => (
                 <li key={product?.id} className="flex items-start space-x-4 py-6">
                   <Image
@@ -376,9 +443,7 @@ const CheckoutPage = () => {
                     <h3>{product?.title}</h3>
                     <p className="text-gray-500">x{product?.amount}</p>
                   </div>
-                  <p className="flex-none text-base font-medium">
-                    ${product?.price}
-                  </p>
+                  <p className="flex-none text-base font-medium">${product?.price}</p>
                 </li>
               ))}
             </ul>
@@ -398,9 +463,7 @@ const CheckoutPage = () => {
               </div>
               <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                 <dt className="text-base">Total</dt>
-                <dd className="text-base">
-                  ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
-                </dd>
+                <dd className="text-base">${total === 0 ? 0 : Math.round(total + total / 5 + 5)}</dd>
               </div>
             </dl>
           </div>
@@ -410,18 +473,12 @@ const CheckoutPage = () => {
           <div className="mx-auto max-w-lg lg:max-w-none">
             {/* Contact Information */}
             <section aria-labelledby="contact-info-heading">
-              <h2
-                id="contact-info-heading"
-                className="text-lg font-medium text-gray-900"
-              >
+              <h2 id="contact-info-heading" className="text-lg font-medium text-gray-900">
                 Contact information
               </h2>
 
               <div className="mt-6">
-                <label
-                  htmlFor="name-input"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="name-input" className="block text-sm font-medium text-gray-700">
                   Name * (min 2 characters)
                 </label>
                 <div className="mt-1">
@@ -445,10 +502,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label
-                  htmlFor="lastname-input"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="lastname-input" className="block text-sm font-medium text-gray-700">
                   Lastname * (min 2 characters)
                 </label>
                 <div className="mt-1">
@@ -472,10 +526,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label
-                  htmlFor="phone-input"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="phone-input" className="block text-sm font-medium text-gray-700">
                   Phone number * (min 10 digits)
                 </label>
                 <div className="mt-1">
@@ -499,10 +550,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label
-                  htmlFor="email-address"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
                   Email address *
                 </label>
                 <div className="mt-1">
@@ -536,9 +584,7 @@ const CheckoutPage = () => {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">
-                      Payment Information
-                    </h3>
+                    <h3 className="text-sm font-medium text-blue-800">Payment Information</h3>
                     <div className="mt-2 text-sm text-blue-700">
                       <p>Payment will be processed after order confirmation. You will be contacted for payment details.</p>
                     </div>
@@ -549,19 +595,13 @@ const CheckoutPage = () => {
 
             {/* Shipping Address */}
             <section aria-labelledby="shipping-heading" className="mt-10">
-              <h2
-                id="shipping-heading"
-                className="text-lg font-medium text-gray-900"
-              >
+              <h2 id="shipping-heading" className="text-lg font-medium text-gray-900">
                 Shipping address
               </h2>
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                 <div className="sm:col-span-3">
-                  <label
-                    htmlFor="company"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">
                     Company *
                   </label>
                   <div className="mt-1">
@@ -584,10 +624,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label
-                    htmlFor="address"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
                     Address *
                   </label>
                   <div className="mt-1">
@@ -611,10 +648,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label
-                    htmlFor="apartment"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="apartment" className="block text-sm font-medium text-gray-700">
                     Apartment, suite, etc. * (required)
                   </label>
                   <div className="mt-1">
@@ -637,10 +671,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="city"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">
                     City *
                   </label>
                   <div className="mt-1">
@@ -664,10 +695,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="region"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="region" className="block text-sm font-medium text-gray-700">
                     Country *
                   </label>
                   <div className="mt-1">
@@ -691,10 +719,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="postal-code"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700">
                     Postal code *
                   </label>
                   <div className="mt-1">
@@ -718,10 +743,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label
-                    htmlFor="order-notice"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="order-notice" className="block text-sm font-medium text-gray-700">
                     Order notice
                   </label>
                   <div className="mt-1">
