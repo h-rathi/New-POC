@@ -42,6 +42,19 @@ const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
 
   console.log("✅ Valid rows:", valid.length);
   console.log("❌ Invalid rows:", errors.length);
+  
+  // Log first few rows to see what's happening
+  if (rows.length > 0) {
+    console.log("📋 First CSV row data:", JSON.stringify(rows[0], null, 2));
+  }
+  
+  // Log validation errors (first 5 to see the pattern)
+  if (errors.length > 0) {
+    console.log("⚠️  First validation errors:");
+    errors.slice(0, 5).forEach((err) => {
+      console.log(`   Row ${err.index}: ${err.error}`);
+    });
+  }
 
   // Get merchantId from request body or use default (will be fetched in transaction)
   const merchantId = req.body?.merchantId || null;
@@ -79,8 +92,8 @@ const uploadCsvAndCreateBatch = asyncHandler(async (req, res) => {
       return batch;
     },
     {
-      maxWait: 20000, // Maximum time to wait for a transaction slot (20 seconds)
-      timeout: 60000, // Maximum time the interactive transaction can run (60 seconds)
+      maxWait: 30000, // Maximum time to wait for a transaction slot (30 seconds)
+      timeout: 180000, // Maximum time the interactive transaction can run (3 minutes for 180 rows)
     }
   );
 

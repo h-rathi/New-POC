@@ -45,7 +45,11 @@ function validateRow(row) {
 }
 
 async function parseCsvBufferToRows(buffer) {
-  const text = buffer.toString("utf-8");
+  let text = buffer.toString("utf-8");
+  // Remove BOM (Byte Order Mark) if present (UTF-8 BOM is EF BB BF)
+  if (text.charCodeAt(0) === 0xFEFF) {
+    text = text.slice(1);
+  }
   const records = parse(text, {
     columns: true,
     skip_empty_lines: true,
@@ -108,7 +112,9 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows, merchantI
   // Collect items to batch create at the end
   const itemsToCreate = [];
 
-  // Process valid rows
+  // Pre-process rows to separate valid+resolved from invalid
+  const rowsWithResolvedCategory = [];
+  
   for (const row of validRows) {
     // Try to resolve categoryId (could be UUID or category name)
     const resolvedCategoryId =
@@ -132,53 +138,81 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows, merchantI
       failed++;
       continue;
     }
+    
+    rowsWithResolvedCategory.push({ ...row, resolvedCategoryId });
+  }
+
+  // Batch create all products at once for better performance
+  if (rowsWithResolvedCategory.length > 0) {
+    const productsToCreate = rowsWithResolvedCategory.map((row) => ({
+      title: row.title,
+      slug: row.slug,
+      price: row.price,
+      rating: 5,
+      description: row.description ?? "",
+      manufacturer: row.manufacturer ?? "",
+      mainImage: row.mainImage ?? "",
+      categoryId: row.resolvedCategoryId,
+      merchantId: resolvedMerchantId,
+      inStock: row.inStock,
+    }));
 
     try {
-      const product = await tx.product.create({
-        data: {
+      const createdProducts = await tx.product.createMany({
+        data: productsToCreate,
+        skipDuplicates: false,
+      });
+
+      // Map created products back to rows and create items
+      const createdBySlug = new Map();
+      const fetchedProducts = await tx.product.findMany({
+        where: {
+          slug: { in: rowsWithResolvedCategory.map((r) => r.slug) },
+        },
+        select: { id: true, slug: true },
+      });
+      
+      fetchedProducts.forEach((p) => {
+        createdBySlug.set(p.slug, p.id);
+      });
+
+      rowsWithResolvedCategory.forEach((row) => {
+        const productId = createdBySlug.get(row.slug);
+        itemsToCreate.push({
+          batchId,
+          productId: productId || null,
           title: row.title,
           slug: row.slug,
           price: row.price,
-          rating: 5,
-          description: row.description ?? "",
-          manufacturer: row.manufacturer ?? "",
-          mainImage: row.mainImage ?? "",
-          categoryId: resolvedCategoryId, // Use resolved category ID
-          merchantId: resolvedMerchantId, // Add required merchantId
+          manufacturer: row.manufacturer,
+          description: row.description,
+          mainImage: row.mainImage,
+          categoryId: row.resolvedCategoryId,
           inStock: row.inStock,
-        },
+          status: productId ? "CREATED" : "ERROR",
+          error: productId ? null : truncateError("Product creation failed"),
+        });
+        if (productId) success++;
+        else failed++;
       });
-
-      itemsToCreate.push({
-        batchId,
-        productId: product.id,
-        title: row.title,
-        slug: row.slug,
-        price: row.price,
-        manufacturer: row.manufacturer,
-        description: row.description,
-        mainImage: row.mainImage,
-        categoryId: resolvedCategoryId, // Use resolved category ID
-        inStock: row.inStock,
-        status: "CREATED",
-        error: null,
-      });
-      success++;
     } catch (e) {
-      itemsToCreate.push({
-        batchId,
-        title: row.title,
-        slug: row.slug,
-        price: row.price,
-        manufacturer: row.manufacturer,
-        description: row.description,
-        mainImage: row.mainImage,
-        categoryId: resolvedCategoryId || row.categoryId,
-        inStock: row.inStock,
-        status: "ERROR",
-        error: truncateError(e?.message || "Create failed"),
+      // Fallback: if batch create fails, mark all as errors
+      rowsWithResolvedCategory.forEach((row) => {
+        itemsToCreate.push({
+          batchId,
+          title: row.title,
+          slug: row.slug,
+          price: row.price,
+          manufacturer: row.manufacturer,
+          description: row.description,
+          mainImage: row.mainImage,
+          categoryId: row.resolvedCategoryId,
+          inStock: row.inStock,
+          status: "ERROR",
+          error: truncateError(e?.message || "Batch create failed"),
+        });
+        failed++;
       });
-      failed++;
     }
   }
 
