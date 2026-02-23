@@ -13,6 +13,7 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
+import { categoryIdMap } from "@/lib/utils";
 
 interface ProductsProps {
   categorySlug: string | null;
@@ -48,24 +49,34 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
   let products = [];
 
   try {
-    // determine which category we should filter by; this value will
-    // be logged so that it's easier to debug client behavior.
+    // determine which category slug we have, preferring the prop
     let slug = categorySlug;
     if (!slug && typeof searchParams.category === "string") {
       slug = searchParams.category;
     }
 
-    // build the url before firing the request so we can inspect it in devtools
+    // resolve the slug to a database category ID using our mapping
+    // so that filtering is done by ID rather than by name.  this is
+    // more reliable and matches the database schema.
+    let categoryId: string | undefined;
+    if (slug) {
+      categoryId = categoryIdMap[slug];
+      if (!categoryId) {
+        console.warn(`Category slug "${slug}" not found in categoryIdMap`);
+      }
+    }
+
+    // build the url using category ID directly instead of the slug
     const url = `/api/products?filters[price][$lte]=${
       searchParams?.price || 3000
     }&filters[rating][$gte]=${
       Number(searchParams?.rating) || 0
     }&filters[inStock][$${stockMode}]=1${
-      slug ? `&filters[category][$equals]=${encodeURIComponent(slug)}` : ""
+      categoryId ? `&filters[categoryId][$equals]=${encodeURIComponent(categoryId)}` : ""
     }&sort=${searchParams?.sort || 'defaultSort'}&page=${page}`;
 
     // debug output for developers
-    console.debug('Products component fetching', url, 'slug=', slug);
+    console.debug('Products component fetching', url, 'slug=', slug, 'categoryId=', categoryId);
 
     const data = await apiClient.get(url);
 
