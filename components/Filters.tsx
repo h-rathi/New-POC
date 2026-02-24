@@ -43,9 +43,9 @@ const Filters = () => {
     };
 
     return {
-      inStock: { text: "instock", isChecked: getBool("inStock", true) },
-      outOfStock: { text: "outofstock", isChecked: getBool("outOfStock", true) },
-      priceFilter: { text: "price", value: getNum("price", 3000) },
+      inStock: { text: "instock", isChecked: getBool("inStock", false) },
+      outOfStock: { text: "outofstock", isChecked: getBool("outOfStock", false) },
+      priceFilter: { text: "price", value: getNum("price", 10000) },
       ratingFilter: { text: "rating", value: getNum("rating", 0) },
     };
   };
