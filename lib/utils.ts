@@ -1,87 +1,63 @@
-// Category ID mapping for database queries
-export const categoryIdMap: { [key: string]: string } = {
-  "smart-phones": "3117a1b0-6369-491e-8b8b-9fdd5ad9912e",
-  "tablets": "ada699e5-e764-4da0-8d3e-18a8c8c5ed24",
-  "mouses": "da6413b4-22fd-4fbb-9741-d77580dfdcd5",
-  "cameras": "659a91b9-3ff6-47d5-9830-5e7ac905b961",
-  "watches": "a6896b67-197c-4b2a-b5e2-93954474d8b4",
-  "laptops": "782e7829-806b-489f-8c3a-2689548d7153",
-  "computers": "ss6412b4-22fd-4fbb-9741-d77580dfdcd2",
-  "printers": "fs6412b4-22fd-4fbb-9741-d77512dfdfa3",
-  "earbuds": "1cb9439a-ea47-4a33-913b-e9bf935bcc0b",
-  "headphones": "4c2cc9ec-7504-4b7c-8ecd-2379a854a423",
-};
-
 export const categoryMenuList = [
   {
     id: 1,
     title: "Smart Phones",
     src: "/smart phone icon.png",
-    href: "/shop/smart-phones",
-    categoryId: "3117a1b0-6369-491e-8b8b-9fdd5ad9912e"
+    href: "/shop/smart-phones"
   },
   {
     id: 2,
     title: "Tablets",
     src: "/tablet icon.png",
-    href: "/shop/tablets",
-    categoryId: "ada699e5-e764-4da0-8d3e-18a8c8c5ed24"
+    href: "/shop/tablets"
   },
   {
     id: 3,
     title: "Mouses",
     src: "/mouse icon.png",
-    href: "/shop/mouses",
-    categoryId: "da6413b4-22fd-4fbb-9741-d77580dfdcd5"
+    href: "/shop/mouses"
   },
   {
     id: 4,
     title: "Cameras",
     src: "/camera icon.png",
-    href: "/shop/cameras",
-    categoryId: "659a91b9-3ff6-47d5-9830-5e7ac905b961"
+    href: "/shop/cameras"
   },
   {
     id: 5,
     title: "Smart Watches",
     src: "/smart watch.png",
-    href: "/shop/watches",
-    categoryId: "a6896b67-197c-4b2a-b5e2-93954474d8b4"
+    href: "/shop/watches"
   },
   {
     id: 6,
     title: "Laptops",
     src: "/laptop icon.png",
-    href: "/shop/laptops",
-    categoryId: "782e7829-806b-489f-8c3a-2689548d7153"
+    href: "/shop/laptops"
   },
   {
     id: 7,
     title: "PCs",
     src: "/pc icon.png",
-    href: "/shop/computers",
-    categoryId: "ss6412b4-22fd-4fbb-9741-d77580dfdcd2"
+    href: "/shop/computers"
   },
   {
     id: 8,
     title: "Printers",
     src: "/printers icon.png",
-    href: "/shop/printers",
-    categoryId: "fs6412b4-22fd-4fbb-9741-d77512dfdfa3"
+    href: "/shop/printers"
   },
   {
     id: 9,
     title: "Earbuds",
     src: "/ear buds icon.png",
-    href: "/shop/earbuds",
-    categoryId: "1cb9439a-ea47-4a33-913b-e9bf935bcc0b"
+    href: "/shop/earbuds"
   },
   {
     id: 10,
     title: "Head Phones",
     src: "/headphone icon.png",
-    href: "/shop/headphones",
-    categoryId: "4c2cc9ec-7504-4b7c-8ecd-2379a854a423"
+    href: "/shop/headphones"
   },
 ];
 

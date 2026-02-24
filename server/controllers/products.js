@@ -2,7 +2,7 @@ const prisma = require("../utills/db"); // ✅ Use shared connection with SSL
 const { asyncHandler, handleServerError, AppError } = require("../utills/errorHandler");
 
 // Security: Define whitelists for allowed filter types and operators
-const ALLOWED_FILTER_TYPES = ['price', 'rating', 'category', 'categoryId', 'inStock', 'outOfStock'];
+const ALLOWED_FILTER_TYPES = ['price', 'rating', 'category', 'inStock', 'outOfStock'];
 const ALLOWED_OPERATORS = ['gte', 'lte', 'gt', 'lt', 'equals', 'contains'];
 const ALLOWED_SORT_VALUES = ['defaultSort', 'titleAsc', 'titleDesc', 'lowPrice', 'highPrice'];
 
@@ -28,7 +28,6 @@ function validateAndSanitizeFilterValue(filterType, filterValue) {
       const numValue = parseInt(filterValue);
       return isNaN(numValue) ? null : numValue;
     case 'category':
-    case 'categoryId':
       return typeof filterValue === 'string' && filterValue.trim().length > 0 
         ? filterValue.trim() 
         : null;
@@ -110,8 +109,6 @@ const getAllProducts = asyncHandler(async (request, response) => {
             filterType = "price";
           } else if (queryParam.includes("rating")) {
             filterType = "rating";
-          } else if (queryParam.includes("categoryId")) {
-            filterType = "categoryId";
           } else if (queryParam.includes("category")) {
             filterType = "category";
           } else if (queryParam.includes("inStock")) {
@@ -173,47 +170,9 @@ const getAllProducts = asyncHandler(async (request, response) => {
 
     let whereClause = { ...filterObj };
 
-    // Security: Handle categoryId filter directly by ID (preferred approach)
-    if (filterObj.categoryId && filterObj.categoryId.equals) {
-      const categoryId = filterObj.categoryId.equals;
-      delete whereClause.categoryId;
-      whereClause.categoryId = categoryId;
-    }
-    // Fallback: Handle legacy category filter by matching category name to ID
-    else if (filterObj.category && filterObj.category.equals) {
-      const categorySlug = decodeURIComponent(filterObj.category.equals).toLowerCase();
+    // Security: Handle category filter separately with validation
+    if (filterObj.category && filterObj.category.equals) {
       delete whereClause.category;
-      
-      // Try to find category by converting slug to name formats
-      const categoryNameFromSlugWithSpaces = categorySlug
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-      
-      // Fetch all categories and match by lowercase comparison
-      const allCategories = await prisma.category.findMany({
-        select: { id: true, name: true },
-      });
-      
-      const matchedCategory = allCategories.find(
-        (cat) => {
-          const catNameLower = cat.name.toLowerCase();
-          const catNameNoSpaces = catNameLower.replace(/\s+/g, "-");
-          const catNameNoHyphens = catNameLower.replace(/-/g, "");
-          
-          return (
-            catNameLower === categorySlug ||
-            catNameLower === categoryNameFromSlugWithSpaces.toLowerCase() ||
-            catNameLower === categorySlug.replace(/-/g, "") ||
-            catNameNoSpaces === categorySlug ||
-            catNameNoHyphens === categorySlug
-          );
-        }
-      );
-      
-      if (matchedCategory) {
-        whereClause.categoryId = matchedCategory.id;
-      }
     }
 
     // Security: Build sort object safely
@@ -258,23 +217,81 @@ const getAllProducts = asyncHandler(async (request, response) => {
         orderBy: defaultSort,
       });
     } else {
-      // If we have a category or categoryId filter in whereClause, use it
-      products = await prisma.product.findMany({
-        skip: (validatedPage - 1) * 10,
-        take: 12,
-        include: {
-          category: {
-            select: {
-              name: true,
+      // Security: Handle category filter with proper validation
+      if (filterObj.category && filterObj.category.equals) {
+        // Convert slug format (e.g., "smart-phones" or "smart-phones") to category name format
+        const categorySlug = decodeURIComponent(filterObj.category.equals).toLowerCase();
+        
+        // Try to find category by converting slug to name formats
+        // Slug: "smart-phones" -> Name: "smartphones" or "Smart Phones"
+        // Also handle variations like "smartphones" -> "smartphones"
+        const categoryNameFromSlugWithSpaces = categorySlug
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        
+        // Remove hyphens entirely for matching (smart-phones -> smartphones)
+        const categoryNameWithoutHyphens = categorySlug.replace(/-/g, "");
+        
+        // Fetch all categories and match by lowercase comparison
+        const allCategories = await prisma.category.findMany({
+          select: { id: true, name: true },
+        });
+        
+        const matchedCategory = allCategories.find(
+          (cat) => {
+            const catNameLower = cat.name.toLowerCase();
+            const catNameNoSpaces = catNameLower.replace(/\s+/g, "-");
+            const catNameNoHyphens = catNameLower.replace(/-/g, "");
+            
+            return (
+              catNameLower === categorySlug ||
+              catNameLower === categoryNameFromSlugWithSpaces.toLowerCase() ||
+              catNameLower === categoryNameWithoutHyphens ||
+              catNameNoSpaces === categorySlug ||
+              catNameNoHyphens === categorySlug ||
+              catNameLower.replace(/-/g, "") === categorySlug.replace(/-/g, "")
+            );
+          }
+        );
+        
+        if (matchedCategory) {
+          products = await prisma.product.findMany({
+            skip: (validatedPage - 1) * 10,
+            take: 12,
+            include: {
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+            where: {
+              ...whereClause,
+              categoryId: matchedCategory.id,
+            },
+            orderBy: sortObj,
+          });
+        } else {
+          // Category not found, return empty array
+          products = [];
+        }
+      } else {
+        products = await prisma.product.findMany({
+          skip: (validatedPage - 1) * 10,
+          take: 12,
+          include: {
+            category: {
+              select: {
+                name: true,
+              },
             },
           },
-        },
-        where: whereClause,
-        orderBy: sortObj,
-      });
+          where: whereClause,
+          orderBy: sortObj,
+        });
+      }
     }
-
-    console.log('Products.getAllProducts final whereClause:', whereClause);
 
     return response.json(products);
   }
