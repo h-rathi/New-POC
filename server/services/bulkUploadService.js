@@ -31,7 +31,7 @@ function validateRow(row) {
   clean.title = title;
   clean.slug = slug;
   // Convert price to cents (integer) since schema uses Int
-  clean.price = Math.round(price * 100);
+  clean.price = Math.floor(price/90);
   clean.categoryId = categoryId;
   clean.inStock = Math.floor(inStock); // Integer stock quantity
 
