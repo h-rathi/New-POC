@@ -7,7 +7,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSortStore } from "@/app/_zustand/sortStore";
 import { usePaginationStore } from "@/app/_zustand/paginationStore";
 import posthog from "posthog-js";
@@ -22,25 +22,49 @@ interface InputCategory {
 const Filters = () => {
   const pathname = usePathname();
   const { replace } = useRouter();
+  const searchParams = useSearchParams();
 
   const { page } = usePaginationStore();
   const { sortBy } = useSortStore();
 
-  const [inputCategory, setInputCategory] = useState<InputCategory>({
-    inStock: { text: "instock", isChecked: true },
-    outOfStock: { text: "outofstock", isChecked: true },
-    priceFilter: { text: "price", value: 3000 },
-    ratingFilter: { text: "rating", value: 0 },
-  });
+  // derive initial filter state from query parameters so manual links
+  // or bookmarks carrying filter values are respected on first render
+  const initialFilters = (): InputCategory => {
+    const getBool = (key: string, defaultVal: boolean) => {
+      const val = searchParams.get(key);
+      if (val === null) return defaultVal;
+      return val === "true";
+    };
+
+    const getNum = (key: string, defaultVal: number) => {
+      const val = searchParams.get(key);
+      const n = Number(val);
+      return !isNaN(n) && val !== null ? n : defaultVal;
+    };
+
+    return {
+      inStock: { text: "instock", isChecked: getBool("inStock", true) },
+      outOfStock: { text: "outofstock", isChecked: getBool("outOfStock", true) },
+      priceFilter: { text: "price", value: getNum("price", 3000) },
+      ratingFilter: { text: "rating", value: getNum("rating", 0) },
+    };
+  };
+
+  const [inputCategory, setInputCategory] = useState<InputCategory>(initialFilters);
 
   // Sync filters to URL (unchanged)
+  // when URL search params change externally we should update the
+  // controlled filter state so the UI reflects them (e.g. back button,
+  // bookmarked link, category selection that includes filter values).
   useEffect(() => {
-    // start from existing search params so we don't wipe out unrelated
-    // values such as category (or any future additions)
-    const currentParams = new URLSearchParams(window.location.search);
+    setInputCategory(initialFilters());
+  }, [searchParams]);
 
-    // maintain category/query if already present
-    const params = new URLSearchParams(currentParams.toString());
+  useEffect(() => {
+    // build from the current params object which already holds any
+    // unrelated keys (category, etc) so they are preserved during the
+    // replace call.
+    const params = new URLSearchParams(searchParams.toString());
 
     params.set("outOfStock", inputCategory.outOfStock.isChecked.toString());
     params.set("inStock", inputCategory.inStock.isChecked.toString());
@@ -50,7 +74,7 @@ const Filters = () => {
     params.set("page", page.toString());
 
     replace(`${pathname}?${params}`);
-  }, [inputCategory, sortBy, page]);
+  }, [inputCategory, sortBy, page, searchParams]);
 
   return (
     <div>
