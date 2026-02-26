@@ -13,34 +13,45 @@ export default function CartSyncClient() {
   const syncedRef = useRef(false);
 
   useEffect(() => {
-    // Run once when session becomes authenticated
-    if (status === "authenticated" && !syncedRef.current) {
+    // don't attempt any network work until we know auth status
+    if (status === "loading") return;
+
+    const postCurrentCart = async () => {
+      try {
+        const items = products.map((p) => ({
+          productId: p.id,
+          title: p.title,
+          image: p.image,
+          unitPrice: p.price,
+          quantity: p.amount,
+        }));
+
+        await fetch("/api/cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items }),
+        });
+      } catch (err) {
+        console.error("Cart update failed:", err);
+      }
+    };
+
+    // initial hydration/merge when component first sees a non-loading status
+    if (!syncedRef.current) {
       syncedRef.current = true;
+
       (async () => {
         try {
-          // Step 1: If user has local guest items, sync them to DB first
+          // push any local products up first so DB has latest values
           if (products?.length) {
-            const items = products.map((p) => ({
-              productId: p.id,
-              title: p.title,
-              image: p.image,
-              unitPrice: p.price,
-              quantity: p.amount,
-            }));
-
-            await fetch("/api/cart", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ items }),
-            });
+            await postCurrentCart();
           }
 
-          // Step 2: Fetch the user's cart from DB and restore to Zustand store
+          // then fetch whatever the server thinks the cart is and overwrite local state
           const cartRes = await fetch("/api/cart", { method: "GET" });
           const { cart } = await cartRes.json();
 
           if (cart?.items && cart.items.length > 0) {
-            // Clear local Zustand store and repopulate from DB
             clearCart();
             cart.items.forEach((item: any) => {
               addToCart({
@@ -51,19 +62,19 @@ export default function CartSyncClient() {
                 amount: item.quantity,
               });
             });
-            // Ensure totals are recalculated
             calculateTotals();
           } else {
-            // No items in DB cart; just clear local guest cart
             clearCart();
           }
         } catch (err) {
           console.error("Cart sync failed:", err);
-          // On error, just clear guest cart; user's DB cart is still safe
         }
       })();
+    } else {
+      // subsequent changes should be persisted immediately
+      postCurrentCart();
     }
-  }, [status, addToCart, calculateTotals, clearCart, products?.length]);
+  }, [status, products, addToCart, calculateTotals, clearCart]);
 
   return null;
 }
