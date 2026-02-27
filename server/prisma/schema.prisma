@@ -20,7 +20,7 @@ model Product {
   mainImage      String
   price          Int                      @default(0)
   rating         Int                      @default(0)
-  description    String
+  description    String @db.Text
   manufacturer   String
   inStock        Int                      @default(1)
   categoryId     String
@@ -131,7 +131,7 @@ model Notification {
 model Merchant {
   id          String   @id @default(uuid())
   name        String
-  description String?
+  description String? @db.Text
   email       String?
   phone       String?
   address     String?
@@ -171,7 +171,7 @@ model bulk_upload_item {
   slug         String
   price        Int
   manufacturer String?
-  description  String?
+  description  String? @db.Text
   mainImage    String?
   categoryId   String
   inStock      Int
