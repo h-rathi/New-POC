@@ -9,6 +9,7 @@
 
 import { navigation } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 import posthog from "posthog-js";
 
@@ -53,7 +54,7 @@ const Footer = () => {
                   <ul role="list" className="mt-6 space-y-4">
                     {navigation.sale.map((item) => (
                       <li key={item.name}>
-                        <a
+                        <Link
                           href={item.href}
                           onClick={() =>
                             trackFooterClick(item.name, item.href, "Sale")
@@ -61,7 +62,7 @@ const Footer = () => {
                           className="text-sm leading-6 text-black hover:text-gray-700"
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -75,7 +76,7 @@ const Footer = () => {
                   <ul role="list" className="mt-6 space-y-4">
                     {navigation.about.map((item) => (
                       <li key={item.name}>
-                        <a
+                        <Link
                           href={item.href}
                           onClick={() =>
                             trackFooterClick(item.name, item.href, "About Us")
@@ -83,7 +84,7 @@ const Footer = () => {
                           className="text-sm leading-6 text-black hover:text-gray-700"
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -99,7 +100,7 @@ const Footer = () => {
                   <ul role="list" className="mt-6 space-y-4">
                     {navigation.buy.map((item) => (
                       <li key={item.name}>
-                        <a
+                        <Link
                           href={item.href}
                           onClick={() =>
                             trackFooterClick(item.name, item.href, "Buying")
@@ -107,7 +108,7 @@ const Footer = () => {
                           className="text-sm leading-6 text-black hover:text-gray-700"
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -121,7 +122,7 @@ const Footer = () => {
                   <ul role="list" className="mt-6 space-y-4">
                     {navigation.help.map((item) => (
                       <li key={item.name}>
-                        <a
+                        <Link
                           href={item.href}
                           onClick={() =>
                             trackFooterClick(item.name, item.href, "Support")
@@ -129,7 +130,7 @@ const Footer = () => {
                           className="text-sm leading-6 text-black hover:text-gray-700"
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>

@@ -84,26 +84,26 @@ export const incentives = [
 
 export const navigation = {
   sale: [
-    { name: "Discounts", href: "#" },
-    { name: "News", href: "#" },
-    { name: "Register Discounts", href: "#" },
+    { name: "Discounts", href: "/sale/discounts" },
+    { name: "News", href: "/sale/news" },
+    { name: "Register Discounts", href: "/sale/register-discounts" },
   ],
   about: [
-    { name: "About Singitronic", href: "#" },
-    { name: "Work With Us", href: "#" },
-    { name: "Company Profile", href: "#" },
+    { name: "About Singitronic", href: "/about/about-singitronic" },
+    { name: "Work With Us", href: "/about/work-with-us" },
+    { name: "Company Profile", href: "/about/company-profile" },
   ],
   buy: [
-    { name: "Singitronic Loyalty Card", href: "#" },
-    { name: "Terms Of Use", href: "#" },
-    { name: "Privacy Policy", href: "#" },
-    { name: "Complaints", href: "#" },
-    { name: "Partners", href: "#" },
+    { name: "Singitronic Loyalty Card", href: "/buying/singitronic-loyalty-card" },
+    { name: "Terms Of Use", href: "/buying/terms-of-use" },
+    { name: "Privacy Policy", href: "/buying/privacy-policy" },
+    { name: "Complaints", href: "/buying/complaints" },
+    { name: "Partners", href: "/buying/partners" },
   ],
   help: [
-    { name: "Contact", href: "#" },
-    { name: "How to Buy at Singitronic", href: "#" },
-    { name: "FAQ", href: "#" },
+    { name: "Contact", href: "/support/contact" },
+    { name: "How to Buy at Singitronic", href: "/support/how-to-buy" },
+    { name: "FAQ", href: "/support/faq" },
   ],
 };
 
