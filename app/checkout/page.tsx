@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
+import { sanitize } from "@/lib/sanitize";
 import posthog from "posthog-js";
 
 const CheckoutPage = () => {
@@ -217,7 +218,7 @@ const CheckoutPage = () => {
                 reason: "duplicate_order",
                 component: "CheckoutPage",
               });
-            } catch (err) {}
+            } catch (err) { }
             return; // Don't throw, just return to stop execution
           } else if (errorData.details && Array.isArray(errorData.details)) {
             // Validation errors
@@ -242,7 +243,7 @@ const CheckoutPage = () => {
             reason: `http_${response.status}`,
             component: "CheckoutPage",
           });
-        } catch (err) {}
+        } catch (err) { }
         return; // Stop execution instead of throwing
       }
 
@@ -292,6 +293,21 @@ const CheckoutPage = () => {
         console.warn("PostHog capture failed (purchase):", err);
       }
 
+      const payloadData = {
+        orderId,
+        name: orderData.name,
+        lastname: orderData.lastname,
+        address: orderData.adress,
+        city: orderData.city,
+        country: orderData.country,
+        apartment: orderData.apartment,
+        timestamp: new Date().getTime()
+      };
+
+      const jsonString = JSON.stringify(payloadData);
+      // Use browser-native btoa and encodeURIComponent to handle special characters correctly without relying on Node Buffer polyfills, which may fail for guest users.
+      const encodedPayload = btoa(encodeURIComponent(jsonString));
+
       // Clear form and cart
       setCheckoutForm({
         name: "",
@@ -318,7 +334,7 @@ const CheckoutPage = () => {
 
       toast.success("Order created successfully! You will be contacted for payment.");
       setTimeout(() => {
-        router.push("/");
+        router.push(`/thank-you?data=${encodeURIComponent(encodedPayload)}`);
       }, 1000);
     } catch (error: any) {
       console.error("💥 Error in makePurchase:", error);
@@ -329,7 +345,7 @@ const CheckoutPage = () => {
           error: error?.message || String(error),
           component: "CheckoutPage",
         });
-      } catch (err) {}
+      } catch (err) { }
 
       // Handle server validation errors
       if (error.response?.status === 400) {
@@ -433,8 +449,19 @@ const CheckoutPage = () => {
               {products.map((product) => (
                 <li key={product?.id} className="flex items-start space-x-4 py-6">
                   <Image
-                    src={product?.image ? `/${product?.image}` : "/product_placeholder.jpg"}
-                    alt={product?.title}
+                    src={
+                      product?.image
+                        ? product.image.startsWith("http://") ||
+                          product.image.startsWith("https://")
+                          ? product.image
+                          : `/${product.image}`
+                        : "/product_placeholder.jpg"
+                    }
+                    unoptimized={
+                      product?.image?.startsWith("http://") ||
+                      product?.image?.startsWith("https://")
+                    }
+                    alt={sanitize(product?.title) || "Product image"}
                     width={80}
                     height={80}
                     className="h-20 w-20 flex-none rounded-md object-cover object-center"
