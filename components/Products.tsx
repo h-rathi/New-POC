@@ -21,28 +21,22 @@ interface ProductsProps {
 
 const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
   // getting all data from URL slug and preparing everything for sending GET request
-  const inStockNum = searchParams?.inStock === "true" ? 1 : 0;
-  const outOfStockNum = searchParams?.outOfStock === "true" ? 1 : 0;
+  // determine checkbox states as booleans (simpler than numeric flags)
+  const inStockChecked = searchParams?.inStock === "true";
+  const outOfStockChecked = searchParams?.outOfStock === "true";
   const page = searchParams?.page ? Number(searchParams?.page) : 1;
 
-  let stockMode: string = "lte";
-  
-  // preparing inStock and out of stock filter for GET request
-  // If in stock checkbox is checked, stockMode is "equals"
-  if (inStockNum === 1) {
-    stockMode = "equals";
-  }
- // If out of stock checkbox is checked, stockMode is "lt"
-  if (outOfStockNum === 1) {
-    stockMode = "lt";
-  }
-   // If in stock and out of stock checkboxes are checked, stockMode is "lte"
-  if (inStockNum === 1 && outOfStockNum === 1) {
-    stockMode = "lte";
-  }
-   // If in stock and out of stock checkboxes aren't checked, stockMode is "gt"
-  if (inStockNum === 0 && outOfStockNum === 0) {
-    stockMode = "gt";
+  // build a filter segment for the stock field.  The API is simpler when we
+  // omit the `inStock` filter entirely (yielding all products) when both
+  // options are selected or when none are selected.  Individual cases map to:
+  //   inStock only   => inStock > 0
+  //   outOfStock only=> inStock == 0
+  // others         => no constraint
+  let stockFilterParams = "";
+  if (inStockChecked && !outOfStockChecked) {
+    stockFilterParams = "&filters[inStock][$gt]=0";
+  } else if (!inStockChecked && outOfStockChecked) {
+    stockFilterParams = "&filters[inStock][$eq]=0";
   }
 
   let products = [];
@@ -57,10 +51,10 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
 
     // build the url before firing the request so we can inspect it in devtools
     const url = `/api/products?filters[price][$lte]=${
-      searchParams?.price || 3000
+      searchParams?.price || 10000
     }&filters[rating][$gte]=${
       Number(searchParams?.rating) || 0
-    }&filters[inStock][$${stockMode}]=1${
+    }${stockFilterParams}${
       slug ? `&filters[category][$equals]=${encodeURIComponent(slug)}` : ""
     }&sort=${searchParams?.sort || 'defaultSort'}&page=${page}`;
 

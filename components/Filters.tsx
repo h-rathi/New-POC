@@ -43,7 +43,8 @@ const Filters = () => {
     };
 
     return {
-      inStock: { text: "instock", isChecked: getBool("inStock", false) },
+      // default to showing in‑stock products unless user explicitly changes it
+      inStock: { text: "instock", isChecked: getBool("inStock", true) },
       outOfStock: { text: "outofstock", isChecked: getBool("outOfStock", false) },
       priceFilter: { text: "price", value: getNum("price", 10000) },
       ratingFilter: { text: "rating", value: getNum("rating", 0) },
@@ -148,8 +149,8 @@ const Filters = () => {
         <input
           type="range"
           min={0}
-          max={5000000}
-          step={10}
+          max={10000}
+          step={20}
           value={inputCategory.priceFilter.value}
           className="range"
           onChange={(e) => {
