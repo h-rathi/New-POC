@@ -406,7 +406,30 @@ const CheckoutPage = () => {
     }
   };
 
+  // Wait for Zustand persist to finish rehydrating from localStorage
+  // before checking whether the cart is empty. Without this, on a page
+  // refresh the store starts as [] (default) and the check fires too early.
+  const [hasHydrated, setHasHydrated] = useState(false);
+
   useEffect(() => {
+    // Zustand persist exposes onFinishHydration to know when localStorage
+    // data has been loaded into the store.
+    const unsub = useProductStore.persist.onFinishHydration(() => {
+      setHasHydrated(true);
+    });
+
+    // If hydration already finished before this effect ran (fast refresh, etc)
+    if (useProductStore.persist.hasHydrated()) {
+      setHasHydrated(true);
+    }
+
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    // Don't run until the store has been rehydrated from localStorage
+    if (!hasHydrated) return;
+
     // Track checkout page view (non-PII)
     try {
       posthog.capture("checkout_viewed", {
@@ -423,7 +446,7 @@ const CheckoutPage = () => {
       router.push("/cart");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasHydrated]);
 
   return (
     <div className="bg-white">
