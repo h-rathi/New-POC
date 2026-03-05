@@ -9,6 +9,7 @@
 
 import Image from "next/image";
 import React, { useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import posthog from "posthog-js";
 
 const Hero = () => {
@@ -19,11 +20,14 @@ const Hero = () => {
     });
   }, []);
 
+  const router = useRouter();
+
   const handleCtaClick = (cta: "buy_now" | "learn_more") => {
     posthog.capture("hero_cta_clicked", {
       cta,
       component: "Hero",
     });
+    router.push("https://new-poc-ten.vercel.app/product/smart-watch-demo");
   };
 
   return (
