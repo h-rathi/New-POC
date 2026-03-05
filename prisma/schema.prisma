@@ -235,6 +235,9 @@ model CartItem {
   // Optional metadata for variants/options
   metadata Json?
 
+  // logical deletion flag – when true the item is no longer considered active
+  isRemoved Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

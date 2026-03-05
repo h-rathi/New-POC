@@ -275,6 +275,13 @@ const CheckoutPage = () => {
 
       console.log(" All products added successfully!");
 
+      // once the order is fully created, clear the cart server-side so next visit starts fresh
+      try {
+        await fetch("/api/cart", { method: "DELETE" });
+      } catch (err) {
+        console.warn("Failed to clear server cart after checkout:", err);
+      }
+
       // Capture purchase (non-PII — no address or personal fields)
       try {
         posthog.capture("purchase_completed", {

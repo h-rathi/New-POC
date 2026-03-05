@@ -47,6 +47,23 @@ async function findOrCreateCart({
   return cart;
 }
 
+// read-only lookup (does not create)
+async function findCart({
+  userId,
+  cartToken,
+}: {
+  userId?: string | null;
+  cartToken?: string | null;
+}) {
+  if (userId) {
+    return prisma.cart.findFirst({ where: { userId } });
+  }
+  if (cartToken) {
+    return prisma.cart.findFirst({ where: { cartToken } });
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/cart – read-only, never mutates
 // ---------------------------------------------------------------------------
@@ -62,12 +79,12 @@ export async function GET(req: NextRequest) {
     if (userId) {
       cart = await prisma.cart.findFirst({
         where: { userId },
-        include: { items: true },
+        include: { items: { where: { isRemoved: false } } },
       });
     } else if (cartToken) {
       cart = await prisma.cart.findFirst({
         where: { cartToken },
-        include: { items: true },
+        include: { items: { where: { isRemoved: false } } },
       });
     }
 
@@ -127,33 +144,59 @@ export async function POST(req: NextRequest) {
 
     const cart = await findOrCreateCart({ userId, cartToken });
     if (!cart) {
-      // This should not happen now, but protect anyway
       return NextResponse.json(
         { error: "Unable to determine cart owner. Please clear cookies and try again." },
         { status: 400 }
       );
     }
 
-    // Replace items: delete existing then recreate from client payload
-    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    // fetch all existing items (including those previously removed)
+    const existingItems = await prisma.cartItem.findMany({ where: { cartId: cart.id } });
+    const existingByProduct: Record<string, typeof existingItems[0]> = {};
+    existingItems.forEach((it) => {
+      if (it.productId) existingByProduct[it.productId] = it;
+    });
 
-    const createData = items.map((it) => ({
-      cartId: cart.id,
-      productId: it.productId ?? it.id ?? null,
-      title: it.title ?? "",
-      image: it.image ?? null,
-      unitPrice: Math.round(Number(it.unitPrice ?? it.price ?? 0)),
-      quantity: Math.max(1, Number(it.quantity ?? it.amount ?? 1)),
-      metadata: it.metadata ?? null,
-    }));
+    // mark everything as removed by default; we'll flip back when we see it again
+    if (existingItems.length) {
+      await prisma.cartItem.updateMany({
+        where: { cartId: cart.id },
+        data: { isRemoved: true },
+      });
+    }
 
-    if (createData.length) {
-      await prisma.cartItem.createMany({ data: createData });
+    // process incoming items: upsert quantity and un-remove
+    for (const it of items) {
+      const productId = it.productId ?? it.id ?? null;
+      if (!productId) continue;
+
+      const quantity = Math.max(1, Number(it.quantity ?? it.amount ?? 1));
+      const data = {
+        cartId: cart.id,
+        productId,
+        title: it.title ?? "",
+        image: it.image ?? null,
+        unitPrice: Math.round(Number(it.unitPrice ?? it.price ?? 0)),
+        quantity,
+        metadata: it.metadata ?? null,
+        isRemoved: false,
+      } as any;
+
+      if (existingByProduct[productId]) {
+        // update existing row (could have been marked removed above)
+        await prisma.cartItem.update({
+          where: { id: existingByProduct[productId].id },
+          data,
+        });
+      } else {
+        // new item
+        await prisma.cartItem.create({ data });
+      }
     }
 
     const updated = await prisma.cart.findUnique({
       where: { id: cart.id },
-      include: { items: true },
+      include: { items: { where: { isRemoved: false } } },
     });
 
     const res = NextResponse.json({ cart: updated });
@@ -168,6 +211,39 @@ export async function POST(req: NextRequest) {
     console.error("[POST /api/cart] unexpected error:", err);
     return NextResponse.json(
       { error: "Internal server error while saving cart" },
+      { status: 500 }
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DELETE /api/cart – remove entire cart and its items (used after checkout)
+// ---------------------------------------------------------------------------
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions as any);
+    const userId = (session as any)?.user?.id ?? null;
+    const cartToken = getCartTokenFromCookies(req) ?? (session as any)?.sessionId ?? null;
+
+    const cart = await findCart({ userId, cartToken });
+    if (!cart) {
+      // nothing to clear
+      return NextResponse.json({ success: true });
+    }
+
+    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    await prisma.cart.delete({ where: { id: cart.id } });
+
+    // clear cookie for guest
+    const res = NextResponse.json({ success: true });
+    if (!userId && cartToken) {
+      res.cookies.set("cart_token", "", { maxAge: 0, path: "/" });
+    }
+    return res;
+  } catch (err: any) {
+    console.error("[DELETE /api/cart] unexpected error:", err);
+    return NextResponse.json(
+      { error: "Internal server error while clearing cart" },
       { status: 500 }
     );
   }

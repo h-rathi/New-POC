@@ -41,15 +41,17 @@ export default function CartSyncClient() {
           // Flag so the products-changed effect doesn't immediately POST
           skipNextSyncRef.current = true;
           clearCart();
-          cart.items.forEach((item: any) => {
-            addToCart({
-              id: item.productId || item.id,
-              title: item.title,
-              price: item.unitPrice,
-              image: item.image,
-              amount: item.quantity,
+          cart.items
+            .filter((item: any) => !item.isRemoved)
+            .forEach((item: any) => {
+              addToCart({
+                id: item.productId || item.id,
+                title: item.title,
+                price: item.unitPrice,
+                image: item.image,
+                amount: item.quantity,
+              });
             });
-          });
           calculateTotals();
         }
         // If the server has no cart, keep the existing localStorage cart
