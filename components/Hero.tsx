@@ -40,10 +40,9 @@ const Hero = () => {
           </h1>
 
           <p className="text-white max-sm:text-sm">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor modi
-            iure laudantium necessitatibus ab, voluptates vitae ullam. Officia
-            ipsam iusto beatae nesciunt, consequatur deserunt minima maiores
-            earum obcaecati. Optio, nam!
+            Our time, reimagined.
+A smartwatch that tracks your health, powers your day,
+and keeps you connected—effortlessly. A powerful companion for your fitness and everyday life.
           </p>
 
           <div className="flex gap-x-1 max-lg:flex-col max-lg:gap-y-1">
