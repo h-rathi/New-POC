@@ -308,6 +308,14 @@ const CheckoutPage = () => {
         city: orderData.city,
         country: orderData.country,
         apartment: orderData.apartment,
+        postalCode: orderData.postalCode,
+        total: total,
+        items: products.map((p: any) => ({
+          title: p.title,
+          price: p.price,
+          amount: p.amount,
+          image: p.image,
+        })),
         timestamp: new Date().getTime()
       };
 

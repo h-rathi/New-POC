@@ -2,7 +2,7 @@ export default function FAQPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold">FAQ</h1>
-      <p>Work in Progress for FAQ.</p>
+      <p>This page is under construction and will be available shortly.</p>
     </div>
   );
 }
