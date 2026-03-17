@@ -34,11 +34,15 @@ const OfferedProducts = async () => {
         const prodData = await apiClient.get(`/api/products/${offer.productId}`);
         if (prodData.ok) {
           const productResult = await prodData.json();
-          // Modify the price to show the discounted price
+          // Pass the correct original and discounted price to ProductItem
           return {
             ...productResult,
-            price: offer.discountedPrice,
-            originalPrice: offer.price,
+            price: offer.price,
+            discountedPrice: offer.discountedPrice,
+            hasDiscount: true,
+            offerName: offer.offerName,
+            discountType: offer.discountType,
+            discountValue: offer.discountValue,
           };
         }
         return null;

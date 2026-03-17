@@ -13,6 +13,9 @@ interface Product {
   originalPrice?: number;
   discountedPrice?: number;
   hasDiscount?: boolean;
+  offerName?: string;
+  discountType?: string;
+  discountValue?: number;
 }
 
 interface Merchant {

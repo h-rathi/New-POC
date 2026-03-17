@@ -56,6 +56,9 @@ const applyOffersToProducts = async (products) => {
   return products.map(product => {
     let bestDiscountedPrice = product.price; // Start with the original price
     let hasValidOffer = false;
+    let appliedOfferName = null;
+    let appliedDiscountType = null;
+    let appliedDiscountValue = null;
 
     activeOffers.forEach((offer) => {
       // Check if offer applies to this product
@@ -74,6 +77,9 @@ const applyOffersToProducts = async (products) => {
         // Keep the lowest price if product matches multiple offers
         if (currentDiscountedPrice < bestDiscountedPrice) {
           bestDiscountedPrice = currentDiscountedPrice;
+          appliedOfferName = offer.name;
+          appliedDiscountType = offer.discountType;
+          appliedDiscountValue = offer.discountValue;
         }
       }
     });
@@ -82,6 +88,9 @@ const applyOffersToProducts = async (products) => {
       ...product,
       discountedPrice: bestDiscountedPrice,
       hasDiscount: hasValidOffer, // true if at least one valid offer applied
+      offerName: appliedOfferName,
+      discountType: appliedDiscountType,
+      discountValue: appliedDiscountValue,
     };
   });
 };

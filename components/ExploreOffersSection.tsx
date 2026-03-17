@@ -33,7 +33,7 @@ const ExploreOffersSection = () => {
           onClick={handleCtaClick}
           className="inline-block bg-blue-600 font-bold text-white px-10 py-4 text-xl hover:bg-black transition-colors w-auto rounded-md uppercase"
         >
-          VIEW ALL DEALS
+          SHOP ALL DEALS
         </Link>
       </div>
     </div>

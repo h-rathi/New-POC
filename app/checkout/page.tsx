@@ -30,6 +30,14 @@ const CheckoutPage = () => {
   const { products, total, clearCart } = useProductStore();
   const router = useRouter();
 
+  // Compute total savings locally based on cart state
+  const totalSavings = products.reduce((acc, item) => {
+    if (item.hasDiscount && item.discountedPrice !== undefined) {
+      return acc + (item.price - item.discountedPrice) * item.amount;
+    }
+    return acc;
+  }, 0);
+
   // Add validation functions that match server requirements
   const validateForm = () => {
     const errors: string[] = [];
@@ -291,7 +299,7 @@ const CheckoutPage = () => {
           products: products.map((p: any) => ({
             product_id: p.id,
             quantity: p.amount,
-            price: p.price,
+            price: p.hasDiscount && p.discountedPrice !== undefined ? p.discountedPrice : p.price,
           })),
           user_id: userId || null,
           component: "CheckoutPage",
@@ -312,7 +320,7 @@ const CheckoutPage = () => {
         total: total,
         items: products.map((p: any) => ({
           title: p.title,
-          price: p.price,
+          price: p.hasDiscount && p.discountedPrice !== undefined ? p.discountedPrice : p.price,
           amount: p.amount,
           image: p.image,
         })),
@@ -508,7 +516,9 @@ const CheckoutPage = () => {
                     <h3>{product?.title}</h3>
                     <p className="text-gray-500">x{product?.amount}</p>
                   </div>
-                  <p className="flex-none text-base font-medium">${product?.price}</p>
+                  <p className="flex-none text-base font-medium">
+                    ${product.hasDiscount && product.discountedPrice !== undefined ? product.discountedPrice : product.price}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -516,8 +526,14 @@ const CheckoutPage = () => {
             <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Subtotal</dt>
-                <dd>${total}</dd>
+                <dd>${total + totalSavings}</dd>
               </div>
+              {totalSavings > 0 && (
+                <div className="flex items-center justify-between">
+                  <dt className="text-gray-600">Offer Applied (Saved)</dt>
+                  <dd className="text-green-600 font-medium">-${totalSavings}</dd>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Shipping</dt>
                 <dd>$5</dd>

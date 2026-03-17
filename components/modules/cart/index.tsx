@@ -14,6 +14,14 @@ export const CartModule = () => {
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
 
+  // Compute total savings based on current cart
+  const totalSavings = products.reduce((acc, item) => {
+    if (item.hasDiscount && item.discountedPrice !== undefined) {
+      return acc + (item.price - item.discountedPrice) * item.amount;
+    }
+    return acc;
+  }, 0);
+
   const handleRemoveItem = (id: string) => {
     removeFromCart(id);
     calculateTotals();
@@ -135,9 +143,17 @@ export const CartModule = () => {
           <div className="flex items-center justify-between">
             <dt className="text-sm text-gray-600">Subtotal</dt>
             <dd className="text-sm font-medium text-gray-900">
-              ${total}
+              ${total + totalSavings}
             </dd>
           </div>
+          {totalSavings > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+              <dt className="text-sm text-gray-600">Offer Applied (Saved)</dt>
+              <dd className="text-sm font-medium text-green-600">
+                -${totalSavings}
+              </dd>
+            </div>
+          )}
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex items-center text-sm text-gray-600">
               <span>Shipping estimate</span>

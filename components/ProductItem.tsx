@@ -38,11 +38,21 @@ const ProductItem = ({
 
   return (
     <div className="flex flex-col items-center gap-y-2">
-      {/* Image */}
+      {/* Image with Top Left Discount Pill */}
       <Link
         href={`/product/${product.slug}`}
         onClick={() => handleProductClick("image")}
+        className="relative block"
       >
+        {product.discountType && product.discountValue !== undefined && (
+          <div className="absolute top-2 left-2 z-10 bg-red-600 text-white px-2 py-1 rounded-full shadow-sm pointer-events-none">
+            <p className="text-xs font-bold leading-none tracking-wide">
+              {product.discountType === "PERCENTAGE" 
+                ? `-${product.discountValue}%` 
+                : `$${product.discountValue} OFF`}
+            </p>
+          </div>
+        )}
         <Image
           src={
             product.mainImage
@@ -76,6 +86,13 @@ const ProductItem = ({
       >
         {sanitize(product.title)}
       </Link>
+
+      {/* Offer Subtitle (Amazon-style Red Tag) */}
+      {product.offerName && (
+        <span className="bg-red-600 text-white font-semibold text-[11px] px-2 py-0.5 rounded-sm mb-1 inline-block truncate max-w-[90%]" title={product.offerName}>
+          {product.offerName}
+        </span>
+      )}
 
       {/* Price */}
       <PriceRenderer 

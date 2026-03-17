@@ -64,7 +64,10 @@ const getActiveOffers = async () => {
       productId: p.id,
       price: p.price,
       discountedPrice: p.discountedPrice,
-      hasDiscount: p.hasDiscount
+      hasDiscount: p.hasDiscount,
+      offerName: p.offerName,
+      discountType: p.discountType,
+      discountValue: p.discountValue
     }));
 
   return responseData;
