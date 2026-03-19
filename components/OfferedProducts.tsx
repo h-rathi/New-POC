@@ -2,11 +2,12 @@ import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
 
-const OfferedProducts = async () => {
+const OfferedProducts = async ({ offerId }: { offerId?: string }) => {
   let products = [];
   try {
     // 1. Fetch active offers which returns: [{ productId: "uuid", discountedPrice: 8500 }]
-    const offersData = await apiClient.get('/api/offers');
+    const endpoint = offerId ? `/api/offers?offerId=${offerId}` : '/api/offers';
+    const offersData = await apiClient.get(endpoint);
 
     if (!offersData.ok) {
       console.error('Failed to fetch offered products:', offersData.statusText);

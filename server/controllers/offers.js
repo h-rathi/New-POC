@@ -7,7 +7,12 @@ const offersService = require("../services/offersService");
  * [{ "productId": "uuid", "discountedPrice": 8500 }]
  */
 const getActiveOffersProducts = asyncHandler(async (request, response) => {
-  const data = await offersService.getActiveOffers();
+  const { mode, offerId } = request.query;
+  if (mode === "list") {
+    const data = await offersService.getActiveOffersList();
+    return response.status(200).json(data);
+  }
+  const data = await offersService.getActiveOffers(offerId);
   return response.status(200).json(data);
 });
 

@@ -10,10 +10,24 @@
 import { navigation } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import posthog from "posthog-js";
+import apiClient from "@/lib/api";
 
 const Footer = () => {
+  const [activeOffers, setActiveOffers] = useState<{id: string, name: string}[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/api/offers?mode=list')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setActiveOffers(data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch active offers for footer:", err));
+  }, []);
+
   const trackFooterClick = (
     label: string,
     href: string,
@@ -62,6 +76,19 @@ const Footer = () => {
                           className="text-sm leading-6 text-black hover:text-gray-700"
                         >
                           {item.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {activeOffers.map((offer) => (
+                      <li key={offer.id}>
+                        <Link
+                          href={`/offers?offerId=${offer.id}`}
+                          onClick={() =>
+                            trackFooterClick(offer.name, `/offers?offerId=${offer.id}`, "Sale")
+                          }
+                          className="text-sm leading-6 text-black hover:text-gray-700"
+                        >
+                          {offer.name}
                         </Link>
                       </li>
                     ))}

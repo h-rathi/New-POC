@@ -5,16 +5,22 @@ const { applyOffersToProducts } = require("./pricingService");
  * Fetches products that have active offers applied, returning an array of:
  * [{ "productId": "uuid", "price": 10000, "discountedPrice": 8500 }]
  */
-const getActiveOffers = async () => {
+const getActiveOffers = async (offerId) => {
   const currentDate = new Date();
+
+  const whereClause = {
+    isActive: true,
+    startDate: { lte: currentDate },
+    endDate: { gte: currentDate },
+  };
+
+  if (offerId) {
+    whereClause.id = offerId;
+  }
 
   // 1. Fetch only ACTIVE offers where current date is between start and end dates
   const activeOffers = await prisma.offer.findMany({
-    where: {
-      isActive: true,
-      startDate: { lte: currentDate },
-      endDate: { gte: currentDate },
-    },
+    where: whereClause,
     include: {
       offerProducts: true, // Includes associated productIds and categoryIds
     },
@@ -73,6 +79,23 @@ const getActiveOffers = async () => {
   return responseData;
 };
 
+const getActiveOffersList = async () => {
+  const currentDate = new Date();
+  const activeOffers = await prisma.offer.findMany({
+    where: {
+      isActive: true,
+      startDate: { lte: currentDate },
+      endDate: { gte: currentDate },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+  return activeOffers;
+};
+
 module.exports = {
   getActiveOffers,
+  getActiveOffersList,
 };
