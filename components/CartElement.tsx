@@ -17,7 +17,8 @@ const CartElement = () => {
   const { allQuantity } = useProductStore()
 
   const handleCartClick = () => {
-    posthog.capture('cart_icon_clicked', {
+    posthog.capture('GNB_interaction', {
+      action: "cart_icon_clicked",
       cart_quantity: allQuantity,
       component: 'CartElement',
       destination: '/cart',

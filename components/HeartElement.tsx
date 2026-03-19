@@ -15,7 +15,8 @@ import posthog from "posthog-js";
 
 const HeartElement = ({ wishQuantity }: { wishQuantity: number }) => {
   const handleWishlistClick = () => {
-    posthog.capture("wishlist_icon_clicked", {
+    posthog.capture("GNB_interaction", {
+      action: "wishlist_icon_clicked",
       wishlist_quantity: wishQuantity,
       destination: "/wishlist",
       component: "HeartElement",

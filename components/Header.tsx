@@ -28,7 +28,8 @@ const Header = () => {
   const { wishlist, setWishlist, wishQuantity } = useWishlistStore();
 
   const handleLogout = () => {
-    posthog.capture("header_logout_clicked", {
+    posthog.capture("GNB_interaction", {
+      action: "header_logout_clicked",
       component: "Header",
       location: pathname.startsWith("/admin") ? "admin" : "user",
     });
@@ -63,7 +64,8 @@ const Header = () => {
   }, [session?.user?.email, wishlist.length]);
 
   const trackLogoClick = (area: "user" | "admin") => {
-    posthog.capture("header_logo_clicked", {
+    posthog.capture("GNB_interaction", {
+      action: "header_logo_clicked",
       area,
       component: "Header",
     });
