@@ -82,7 +82,7 @@ export const CartModule = () => {
                         ) : null}
                       </div> */}
                     <div className="mt-1">
-                      <PriceRenderer 
+                      <PriceRenderer
                         price={product.price}
                         discountedPrice={product.discountedPrice}
                         hasDiscount={product.hasDiscount}
@@ -157,7 +157,7 @@ export const CartModule = () => {
           </div>
           {totalSavings > 0 && (
             <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-              <dt className="text-sm text-gray-600">Offer Applied (Saved)</dt>
+              <dt className="text-sm text-gray-600">Offer Applied </dt>
               <dd className="text-sm font-medium text-green-600">
                 -${totalSavings}
               </dd>
