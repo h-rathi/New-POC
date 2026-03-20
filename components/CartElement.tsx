@@ -19,8 +19,8 @@ const CartElement = () => {
   const isLoggedIn = useIsLoggedInValue()
 
   const handleCartClick = () => {
-    posthog.capture('GNB_interaction', withIsLoggedIn({
-      action: "cart_icon_clicked",
+    posthog.capture('cart_icon_clicked', withIsLoggedIn({
+      action: "GNB_interaction",
       cart_quantity: allQuantity,
       component: 'CartElement',
       destination: '/cart',

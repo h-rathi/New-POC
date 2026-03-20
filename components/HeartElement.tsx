@@ -18,8 +18,8 @@ const HeartElement = ({ wishQuantity }: { wishQuantity: number }) => {
   const isLoggedIn = useIsLoggedInValue();
 
   const handleWishlistClick = () => {
-    posthog.capture("GNB_interaction", withIsLoggedIn({
-      action: "wishlist_icon_clicked",
+    posthog.capture("wishlist_icon_clicked", withIsLoggedIn({
+      action: "GNB_interaction",
       wishlist_quantity: wishQuantity,
       destination: "/wishlist",
       component: "HeartElement",

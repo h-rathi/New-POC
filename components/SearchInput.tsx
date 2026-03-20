@@ -25,8 +25,8 @@ const SearchInput = () => {
     const sanitizedSearch = sanitize(searchInput);
 
     // 🔹 Analytics
-    posthog.capture("GNB_interaction", withIsLoggedIn({
-      action: "search_performed",
+    posthog.capture("search_performed", withIsLoggedIn({
+      action: "GNB_interaction",
       query: sanitizedSearch,
       query_length: sanitizedSearch.length,
       component: "SearchInput",
