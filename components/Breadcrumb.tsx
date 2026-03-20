@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import { FaHouse } from "react-icons/fa6";
 import posthog from "posthog-js";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { getIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 import { sanitize } from "@/lib/sanitize";
 import { formatCategoryName } from "@/utils/categoryFormating";
@@ -22,6 +22,7 @@ const Breadcrumb = () => {
   const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
   const isLoggedIn = getIsLoggedInValue(session);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Create guest session if user is not logged in
   useEffect(() => {
@@ -66,6 +67,15 @@ const Breadcrumb = () => {
     }
 
     if (pathname === "/shop") {
+      const selectedCategory = searchParams.get("category");
+
+      if (selectedCategory) {
+        return {
+          label: sanitize(formatCategoryName(selectedCategory)),
+          href: `/shop?${searchParams.toString()}`,
+        };
+      }
+
       return {
         label: "All products",
         href: "/shop",

@@ -40,6 +40,7 @@ const Filters = () => {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
   const isLoggedIn = useIsLoggedInValue();
+  const showCategoryFilter = pathname === "/shop";
 
   const { page } = usePaginationStore();
   const { sortBy } = useSortStore();
@@ -148,31 +149,35 @@ const Filters = () => {
       <div className="divider"></div>
 
       {/* 2 — Category */}
-      <div className="flex flex-col gap-y-1 mb-2">
-        <h3 className="text-xl mb-2">Category</h3>
-        <select
-          className="select select-bordered w-full text-base"
-          value={selectedCategory}
-          onChange={(e) => {
-            const value = e.target.value;
-            setSelectedCategory(value);
-            posthog.capture("filter_changed", withIsLoggedIn({
-              filter_type: "category",
-              value,
-              component: "Filters",
-            }, isLoggedIn));
-          }}
-        >
-          <option value="">All Categories</option>
-          {CATEGORY_OPTIONS.map((cat) => (
-            <option key={cat.value} value={cat.value}>
-              {cat.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {showCategoryFilter ? (
+        <>
+          <div className="flex flex-col gap-y-1 mb-2">
+            <h3 className="text-xl mb-2">Category</h3>
+            <select
+              className="select select-bordered w-full text-base"
+              value={selectedCategory}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedCategory(value);
+                posthog.capture("filter_changed", withIsLoggedIn({
+                  filter_type: "category",
+                  value,
+                  component: "Filters",
+                }, isLoggedIn));
+              }}
+            >
+              <option value="">All Categories</option>
+              {CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <div className="divider"></div>
+          <div className="divider"></div>
+        </>
+      ) : null}
 
       {/* 3 — Discounted Products */}
       <div className="flex flex-col gap-y-1">
