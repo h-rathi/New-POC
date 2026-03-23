@@ -68,8 +68,8 @@ export const CartModule = () => {
                     <div className="flex justify-between">
                       <h3 className="text-sm">
                         <Link
-                          href={`#`}
-                          className="font-medium text-gray-700 hover:text-gray-800"
+                          href={`/product/${product.slug || product.id}`}
+                          className="font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors"
                         >
                           {sanitize(product.title)}
                         </Link>

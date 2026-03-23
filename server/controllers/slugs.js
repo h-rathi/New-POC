@@ -5,7 +5,10 @@ async function getProductBySlug(request, response) {
   const { slug } = request.params;
   const product = await prisma.product.findMany({
     where: {
-      slug: slug,
+      OR: [
+        { slug: slug },
+        { id: slug },
+      ]
     },
     include: {
       category: true

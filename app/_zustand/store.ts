@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 export type ProductInCart = {
   id: string;
+  slug?: string;
   title: string;
   price: number;
   image: string;

@@ -26,6 +26,7 @@ const BuyNowSingleProductBtn = ({
     // 1️⃣ Business logic (unchanged)
     addToCart({
       id: product?.id.toString(),
+      slug: product?.slug,
       title: product?.title,
       price: product?.price,
       image: product?.mainImage,
