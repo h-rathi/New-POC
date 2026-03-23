@@ -1,7 +1,8 @@
 "use client";
 import { CustomButton, SectionTitle } from "@/components";
+import { trackSuccessfulLogin } from "@/lib/posthog-user";
 import { isValidEmailAddressFormat } from "@/lib/utils";
-import { signIn, useSession } from "next-auth/react";
+import { getSession, signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -11,6 +12,7 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
+  const [shouldTrackLogin, setShouldTrackLogin] = useState(false);
   const { data: session, status: sessionStatus } = useSession();
  
   useEffect(() => {
@@ -22,10 +24,22 @@ const LoginPage = () => {
     }
  
     // if user has already logged in redirect to home page
-    if (sessionStatus === "authenticated") {
+    if (sessionStatus === "authenticated" && !shouldTrackLogin) {
       router.replace("/");
     }
-  }, [sessionStatus, router, searchParams]);
+  }, [sessionStatus, router, searchParams, shouldTrackLogin]);
+
+  useEffect(() => {
+    if (
+      shouldTrackLogin &&
+      sessionStatus === "authenticated" &&
+      session?.user?.id
+    ) {
+      trackSuccessfulLogin(session.user.id);
+      setShouldTrackLogin(false);
+      router.replace("/");
+    }
+  }, [router, session?.user?.id, sessionStatus, shouldTrackLogin]);
  
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -53,8 +67,18 @@ const LoginPage = () => {
     if (res?.error) {
       setError("Invalid email or password");
       toast.error("Invalid email or password");
+      setShouldTrackLogin(false);
       if (res?.url) router.replace("/");
     } else {
+      const updatedSession = await getSession();
+
+      if (updatedSession?.user?.id) {
+        trackSuccessfulLogin(updatedSession.user.id);
+        router.replace("/");
+      } else {
+        setShouldTrackLogin(true);
+      }
+
       setError("");
       toast.success("Successful login");
     }

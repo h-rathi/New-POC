@@ -54,7 +54,8 @@ export const POST = async (request: Request) => {
     return new NextResponse(
       JSON.stringify({ 
         message: "User registered successfully",
-        userId: newUser.id 
+        userId: newUser.id,
+        registeredAt: newUser.registeredAt.toISOString(),
       }),
       { 
         status: 200,

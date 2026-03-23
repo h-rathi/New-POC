@@ -1,7 +1,7 @@
 "use client";
 import { CustomButton, SectionTitle } from "@/components";
+import { identifyRegisteredUser } from "@/lib/posthog-user";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const RegisterPage = () => {
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { status: sessionStatus } = useSession();
 
   useEffect(() => {
     // chechking if user has already registered redirect to home page
@@ -64,6 +64,7 @@ const RegisterPage = () => {
 
       if (res.ok) {
         setError("");
+        identifyRegisteredUser(data.userId, data.registeredAt);
         toast.success("Registration successful");
         router.push("/login");
       } else {
