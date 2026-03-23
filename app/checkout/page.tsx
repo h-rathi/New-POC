@@ -480,8 +480,6 @@ const CheckoutPage = () => {
         title="Checkout"
         path={
           <>
-            <Link href="/" className="hover:text-blue-200 transition-colors">Home</Link>
-            <span className="mx-2">|</span>
             <Link href="/cart" className="hover:text-blue-200 transition-colors">Cart</Link>
             <span className="mx-2">|</span>
             <span className="opacity-75">Checkout</span>

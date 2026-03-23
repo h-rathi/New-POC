@@ -27,6 +27,7 @@ const Header = () => {
   const isLoggedIn = getIsLoggedInValue(session);
   const pathname = usePathname();
   const { wishlist, setWishlist } = useWishlistStore();
+  const isCheckoutPage = pathname === "/checkout";
 
   const handleLogout = () => {
     posthog.capture("header_logout_clicked", withIsLoggedIn({
@@ -83,8 +84,10 @@ const Header = () => {
     <header className="bg-white">
       <HeaderTop />
 
+      {isCheckoutPage && <div className="h-6 bg-white" aria-hidden="true" />}
+
       {/* USER HEADER */}
-      {pathname.startsWith("/admin") === false && (
+      {pathname.startsWith("/admin") === false && !isCheckoutPage && (
         <div className="h-32 bg-white flex items-center justify-between px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:h-60 max-w-screen-2xl mx-auto">
           <Link href="/" onClick={() => trackLogoClick("user")}>
             <img
