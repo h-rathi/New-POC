@@ -16,6 +16,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { getIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 import { sanitize } from "@/lib/sanitize";
 import { formatCategoryName } from "@/utils/categoryFormating";
+import { formatTitle } from "@/lib/utils";
 
 const Breadcrumb = () => {
   const { data: session } = useSession();
@@ -71,7 +72,7 @@ const Breadcrumb = () => {
 
       if (selectedCategory) {
         return {
-          label: sanitize(formatCategoryName(selectedCategory)),
+          label: formatTitle(sanitize(formatCategoryName(selectedCategory))),
           href: `/shop?${searchParams.toString()}`,
         };
       }
@@ -87,7 +88,7 @@ const Breadcrumb = () => {
 
       if (categorySlug) {
         return {
-          label: sanitize(formatCategoryName(categorySlug)),
+          label: formatTitle(sanitize(formatCategoryName(categorySlug))),
           href: pathname,
         };
       }
