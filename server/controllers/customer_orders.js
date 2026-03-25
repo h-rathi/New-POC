@@ -78,7 +78,9 @@ async function createCustomerOrder(request, response) {
         country: validatedData.country,
         orderNotice: validatedData.orderNotice,
         total: validatedData.total,
-        dateTime: new Date()
+        dateTime: new Date(),
+        ...(request.body.userId && { userId: request.body.userId }),
+        ...(request.body.cartId && { cartId: request.body.cartId })
       },
     });
 
