@@ -18,6 +18,7 @@ interface CustomButtonProps {
   buttonType: "submit" | "reset" | "button";
   customWidth: string;
   textSize: string;
+  disabled?: boolean;
 }
 
 const CustomButton = ({
@@ -27,6 +28,7 @@ const CustomButton = ({
   buttonType,
   customWidth,
   textSize,
+  disabled,
 }: CustomButtonProps) => {
   const isLoggedIn = useIsLoggedInValue();
 
@@ -44,7 +46,8 @@ const CustomButton = ({
     <button
       type={buttonType}
       onClick={handleClick}
-      className={`${customWidth !== "no" && `w-${customWidth}`} uppercase bg-white px-${paddingX} py-${paddingY} text-${textSize} border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2`}
+      disabled={disabled}
+      className={`${customWidth !== "no" && `w-${customWidth}`} uppercase bg-white px-${paddingX} py-${paddingY} text-${textSize} border border-black border-gray-300 font-bold text-blue-600 shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2'}`}
     >
       {text}
     </button>

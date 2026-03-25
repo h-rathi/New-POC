@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 
 const RegisterPage = () => {
   const [error, setError] = useState("");
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
   const router = useRouter();
   const { status: sessionStatus } = useSession();
 
@@ -22,7 +23,7 @@ const RegisterPage = () => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     return emailRegex.test(email);
   };
-  
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     const email = e.target[2].value;
@@ -99,7 +100,7 @@ const RegisterPage = () => {
       <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8 bg-white">
         <div className="flex justify-center flex-col items-center">
           <h2 className="mt-6 text-center text-2xl leading-9 tracking-tight text-gray-900">
-            Sign up on our website
+            Sign Up
           </h2>
         </div>
 
@@ -111,7 +112,7 @@ const RegisterPage = () => {
                   htmlFor="name"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Name
+                  First Name
                 </label>
                 <div className="mt-2">
                   <input
@@ -129,7 +130,7 @@ const RegisterPage = () => {
                   htmlFor="lastname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Lastname
+                  Last Name
                 </label>
                 <div className="mt-2">
                   <input
@@ -205,6 +206,8 @@ const RegisterPage = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={isTermsAccepted}
+                    onChange={(e) => setIsTermsAccepted(e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
                   />
                   <label
@@ -224,6 +227,7 @@ const RegisterPage = () => {
                   paddingY={1.5}
                   customWidth="full"
                   textSize="sm"
+                  disabled={!isTermsAccepted}
                 />
 
                 <p className="text-red-600 text-center text-[16px] my-4">

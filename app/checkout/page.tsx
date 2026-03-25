@@ -584,7 +584,7 @@ const CheckoutPage = () => {
 
               <div className="mt-6">
                 <label htmlFor="name-input" className="block text-sm font-medium text-gray-700">
-                  Name * (min 2 characters)
+                  First Name
                 </label>
                 <div className="mt-1">
                   <input
@@ -608,7 +608,7 @@ const CheckoutPage = () => {
 
               <div className="mt-6">
                 <label htmlFor="lastname-input" className="block text-sm font-medium text-gray-700">
-                  Lastname * (min 2 characters)
+                  Last Name
                 </label>
                 <div className="mt-1">
                   <input
