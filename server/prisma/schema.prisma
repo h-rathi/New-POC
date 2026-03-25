@@ -62,6 +62,7 @@ model User {
   city              String?
   country           String?
   postalCode        String?
+  customerOrders    Customer_order[]
 }
 
 model Customer_order {
@@ -81,6 +82,10 @@ model Customer_order {
   orderNotice String?
   total       Int
   products    customer_order_product[]
+  userId      String?
+  user        User?                    @relation(fields: [userId], references: [id])
+  cartId      String?
+  cart        Cart?                    @relation(fields: [cartId], references: [id])
 }
 
 model customer_order_product {
@@ -221,6 +226,7 @@ model Cart {
   taxRate  Float? // stored as fraction (e.g. 0.2 for 20%)
 
   items CartItem[]
+  customerOrders Customer_order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
