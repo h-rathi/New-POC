@@ -10,6 +10,8 @@ RUN npm ci
 # Copy the rest of the project
 COPY . .
 
+RUN npx prisma generate
+
 # Build Next.js app
 RUN npm run build
 
@@ -20,15 +22,17 @@ FROM node:18-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV DATABASE_URL="mysql://root:root@mysql:3306/myapp_db"
 
 # Copy only necessary files from builder
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.* ./
 
 # Install only production dependencies
-RUN npm ci --production
+
 
 EXPOSE 3000
 

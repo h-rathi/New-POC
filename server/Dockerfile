@@ -13,6 +13,9 @@ COPY . .
 
 # Set environment to production
 ENV NODE_ENV=production
+ENV DATABASE_URL="mysql://root:root@mysql:3306/myapp_db"
+
+RUN npx prisma generate
 
 # Expose backend port
 EXPOSE 3001
