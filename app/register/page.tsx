@@ -1,5 +1,5 @@
 "use client";
-import { CustomButton, SectionTitle } from "@/components";
+import { CustomButton, SectionTitle, Label } from "@/components";
 import { identifyRegisteredUser } from "@/lib/posthog-user";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -127,48 +127,35 @@ const RegisterPage = () => {
           <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  First Name
-                </label>
+                <Label htmlFor="name" required>First Name</Label>
                 <div className="mt-2">
                   <input
                     id="name"
                     name="name"
                     type="text"
                     required
+                    aria-required="true"
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="lastname"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Last Name
-                </label>
+                <Label htmlFor="lastname" required>Last Name</Label>
                 <div className="mt-2">
                   <input
                     id="lastname"
                     name="lastname"
                     type="text"
                     required
+                    aria-required="true"
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Email address
-                </label>
+                <Label htmlFor="email" required>Email address</Label>
                 <div className="mt-2">
                   <input
                     id="email"
@@ -176,18 +163,14 @@ const RegisterPage = () => {
                     type="email"
                     autoComplete="email"
                     required
+                    aria-required="true"
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Password
-                </label>
+                <Label htmlFor="password" required>Password</Label>
                 <div className="mt-2">
                   <input
                     id="password"
@@ -195,18 +178,14 @@ const RegisterPage = () => {
                     type="password"
                     autoComplete="current-password"
                     required
+                    aria-required="true"
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="confirmpassword"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Confirm password
-                </label>
+                <Label htmlFor="confirmpassword" required>Confirm password</Label>
                 <div className="mt-2">
                   <input
                     id="confirmpassword"
@@ -214,6 +193,7 @@ const RegisterPage = () => {
                     type="password"
                     autoComplete="current-password"
                     required
+                    aria-required="true"
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -224,21 +204,21 @@ const RegisterPage = () => {
                 
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="company" className="block text-sm font-medium leading-6 text-gray-900">Company (Optional)</label>
+                    <Label htmlFor="company">Company</Label>
                     <div className="mt-2 text-black">
                       <input id="company" name="company" type="text" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="addressLine" className="block text-sm font-medium leading-6 text-gray-900">Address Line *</label>
+                    <Label htmlFor="addressLine" required>Address Line</Label>
                     <div className="mt-2 text-black">
-                      <input id="addressLine" name="addressLine" type="text" required className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                      <input id="addressLine" name="addressLine" type="text" required aria-required="true" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="apartment" className="block text-sm font-medium leading-6 text-gray-900">Apartment / Suite (Optional)</label>
+                    <Label htmlFor="apartment">Apartment / Suite</Label>
                     <div className="mt-2 text-black">
                       <input id="apartment" name="apartment" type="text" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                     </div>
@@ -246,21 +226,21 @@ const RegisterPage = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="city" className="block text-sm font-medium leading-6 text-gray-900">City *</label>
+                      <Label htmlFor="city" required>City</Label>
                       <div className="mt-2 text-black">
-                        <input id="city" name="city" type="text" required className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        <input id="city" name="city" type="text" required aria-required="true" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="country" className="block text-sm font-medium leading-6 text-gray-900">Country *</label>
+                      <Label htmlFor="country" required>Country</Label>
                       <div className="mt-2 text-black">
-                        <input id="country" name="country" type="text" required className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        <input id="country" name="country" type="text" required aria-required="true" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="postalCode" className="block text-sm font-medium leading-6 text-gray-900">Postal Code *</label>
+                      <Label htmlFor="postalCode" required>Postal Code</Label>
                       <div className="mt-2 text-black">
-                        <input id="postalCode" name="postalCode" type="text" required className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                        <input id="postalCode" name="postalCode" type="text" required aria-required="true" className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                       </div>
                     </div>
                   </div>
