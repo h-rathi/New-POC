@@ -31,7 +31,7 @@ const CheckoutPage = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [usePermanentAddress, setUsePermanentAddress] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [useDifferentName, setUseDifferentName] = useState(false);
   const { products, total, clearCart } = useProductStore();
   const router = useRouter();
@@ -44,13 +44,19 @@ const CheckoutPage = () => {
           if (response.ok) {
             const data = await response.json();
             setUserProfile(data);
-            
+
             // Pre-fill basic details if available
             setCheckoutForm(prev => ({
               ...prev,
               name: data.firstName || prev.name,
               lastname: data.lastName || prev.lastname,
-              email: data.email || prev.email,
+              email: data.email || session.user?.email || prev.email,
+              company: data.company || prev.company,
+              adress: data.addressLine || prev.adress,
+              apartment: data.apartment || prev.apartment,
+              city: data.city || prev.city,
+              country: data.country || prev.country,
+              postalCode: data.postalCode || prev.postalCode,
             }));
           }
         } catch (error) {
@@ -61,11 +67,11 @@ const CheckoutPage = () => {
     fetchUserProfile();
   }, [session]);
 
-  const handleUsePermanentAddressToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeAddressToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
-    setUsePermanentAddress(checked);
-    
-    if (checked && userProfile) {
+    setIsEditingAddress(checked);
+
+    if (!checked && userProfile) {
       setCheckoutForm(prev => ({
         ...prev,
         company: userProfile.company || "",
@@ -75,24 +81,36 @@ const CheckoutPage = () => {
         country: userProfile.country || "",
         postalCode: userProfile.postalCode || "",
       }));
+    } else if (checked) {
+      setCheckoutForm(prev => ({
+        ...prev,
+        company: "",
+        adress: "",
+        apartment: "",
+        city: "",
+        country: "",
+        postalCode: "",
+      }));
     }
   };
 
   const handleDifferentNameToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setUseDifferentName(checked);
-    
+
     if (checked) {
       setCheckoutForm(prev => ({
         ...prev,
         name: "",
         lastname: "",
+        email: "",
       }));
     } else if (userProfile) {
       setCheckoutForm(prev => ({
         ...prev,
         name: userProfile.firstName || prev.name,
         lastname: userProfile.lastName || prev.lastname,
+        email: userProfile.email || session?.user?.email || prev.email,
       }));
     }
   };
@@ -651,7 +669,7 @@ const CheckoutPage = () => {
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <label htmlFor="use-different-name" className="ml-2 block text-sm text-gray-700 cursor-pointer">
-                      Order for someone else (change name)
+                      Order for someone else
                     </label>
                   </div>
                 )}
@@ -747,7 +765,7 @@ const CheckoutPage = () => {
                     name="email-address"
                     autoComplete="email"
                     required
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
@@ -773,27 +791,29 @@ const CheckoutPage = () => {
               </div>
             </section>
 
-            {/* Permanent Address */}
+            {/* Shipping Address */}
             <section aria-labelledby="shipping-heading" className="mt-10">
-              <h2 id="shipping-heading" className="text-lg font-medium text-gray-900 mb-4">
-                Permanent Address
-              </h2>
-              
-              {isLoggedIn && userProfile && (
-                <div className="flex items-center mb-6">
-                  <input
-                    id="use-permanent-address"
-                    name="use-permanent-address"
-                    type="checkbox"
-                    checked={usePermanentAddress}
-                    onChange={handleUsePermanentAddressToggle}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <label htmlFor="use-permanent-address" className="ml-2 block text-sm text-gray-900 cursor-pointer">
-                    Use my saved permanent address
-                  </label>
-                </div>
-              )}
+              <div className="flex items-center justify-between mb-4">
+                <h2 id="shipping-heading" className="text-lg font-medium text-gray-900">
+                  Shipping Address
+                </h2>
+
+                {isLoggedIn && userProfile && (
+                  <div className="flex items-center">
+                    <input
+                      id="change-shipping-address"
+                      name="change-shipping-address"
+                      type="checkbox"
+                      checked={isEditingAddress}
+                      onChange={handleChangeAddressToggle}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <label htmlFor="change-shipping-address" className="ml-2 block text-sm text-gray-900 cursor-pointer font-medium">
+                      Change Shipping Address
+                    </label>
+                  </div>
+                )}
+              </div>
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                 <div className="sm:col-span-3">
@@ -805,7 +825,7 @@ const CheckoutPage = () => {
                       type="text"
                       id="company"
                       name="company"
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.company}
                       onChange={(e) =>
@@ -829,7 +849,7 @@ const CheckoutPage = () => {
                       name="address"
                       autoComplete="street-address"
                       required
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.adress}
                       onChange={(e) =>
@@ -851,7 +871,7 @@ const CheckoutPage = () => {
                       type="text"
                       id="apartment"
                       name="apartment"
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.apartment}
                       onChange={(e) =>
@@ -875,7 +895,7 @@ const CheckoutPage = () => {
                       name="city"
                       autoComplete="address-level2"
                       required
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.city}
                       onChange={(e) =>
@@ -899,7 +919,7 @@ const CheckoutPage = () => {
                       name="region"
                       autoComplete="address-level1"
                       required
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.country}
                       onChange={(e) =>
@@ -923,7 +943,7 @@ const CheckoutPage = () => {
                       name="postal-code"
                       autoComplete="postal-code"
                       required
-                      disabled={isSubmitting || usePermanentAddress}
+                      disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.postalCode}
                       onChange={(e) =>
