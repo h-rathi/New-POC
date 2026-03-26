@@ -1,5 +1,5 @@
 "use client";
-import { SectionTitle, PriceRenderer } from "@/components";
+import { SectionTitle, PriceRenderer, Label } from "@/components";
 import { useProductStore } from "../_zustand/store";
 import Image from "next/image";
 import Link from "next/link";
@@ -676,9 +676,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label htmlFor="name-input" className="block text-sm font-medium text-gray-700">
-                  First Name
-                </label>
+                <Label htmlFor="name-input" required>First Name</Label>
                 <div className="mt-1">
                   <input
                     value={checkoutForm.name}
@@ -693,6 +691,7 @@ const CheckoutPage = () => {
                     name="name-input"
                     autoComplete="given-name"
                     required
+                    aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
@@ -700,9 +699,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label htmlFor="lastname-input" className="block text-sm font-medium text-gray-700">
-                  Last Name
-                </label>
+                <Label htmlFor="lastname-input" required>Last Name</Label>
                 <div className="mt-1">
                   <input
                     value={checkoutForm.lastname}
@@ -717,6 +714,7 @@ const CheckoutPage = () => {
                     name="lastname-input"
                     autoComplete="family-name"
                     required
+                    aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
@@ -724,9 +722,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label htmlFor="phone-input" className="block text-sm font-medium text-gray-700">
-                  Phone number * (min 10 digits)
-                </label>
+                <Label htmlFor="phone-input" required>Phone number (min 10 digits)</Label>
                 <div className="mt-1">
                   <input
                     value={checkoutForm.phone}
@@ -741,6 +737,7 @@ const CheckoutPage = () => {
                     name="phone-input"
                     autoComplete="tel"
                     required
+                    aria-required="true"
                     disabled={isSubmitting}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
@@ -748,9 +745,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="mt-6">
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
-                  Email address *
-                </label>
+                <Label htmlFor="email-address" required>Email address</Label>
                 <div className="mt-1">
                   <input
                     value={checkoutForm.email}
@@ -765,6 +760,7 @@ const CheckoutPage = () => {
                     name="email-address"
                     autoComplete="email"
                     required
+                    aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
@@ -817,9 +813,7 @@ const CheckoutPage = () => {
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                 <div className="sm:col-span-3">
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                    Company *
-                  </label>
+                  <Label htmlFor="company">Company</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -839,9 +833,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                    Address *
-                  </label>
+                  <Label htmlFor="address" required>Address</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -849,6 +841,7 @@ const CheckoutPage = () => {
                       name="address"
                       autoComplete="street-address"
                       required
+                      aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.adress}
@@ -863,9 +856,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="apartment" className="block text-sm font-medium text-gray-700">
-                    Apartment, suite, etc. (Optional)
-                  </label>
+                  <Label htmlFor="apartment">Apartment, suite, etc.</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -885,9 +876,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                    City *
-                  </label>
+                  <Label htmlFor="city" required>City</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -895,6 +884,7 @@ const CheckoutPage = () => {
                       name="city"
                       autoComplete="address-level2"
                       required
+                      aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.city}
@@ -909,9 +899,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="region" className="block text-sm font-medium text-gray-700">
-                    Country *
-                  </label>
+                  <Label htmlFor="region" required>Country</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -919,6 +907,7 @@ const CheckoutPage = () => {
                       name="region"
                       autoComplete="address-level1"
                       required
+                      aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.country}
@@ -933,9 +922,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="postal-code" className="block text-sm font-medium text-gray-700">
-                    Postal code *
-                  </label>
+                  <Label htmlFor="postal-code" required>Postal code</Label>
                   <div className="mt-1">
                     <input
                       type="text"
@@ -943,6 +930,7 @@ const CheckoutPage = () => {
                       name="postal-code"
                       autoComplete="postal-code"
                       required
+                      aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.postalCode}
@@ -957,9 +945,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label htmlFor="order-notice" className="block text-sm font-medium text-gray-700">
-                    Order notice
-                  </label>
+                  <Label htmlFor="order-notice">Order notice</Label>
                   <div className="mt-1">
                     <textarea
                       className="textarea textarea-bordered textarea-lg w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
