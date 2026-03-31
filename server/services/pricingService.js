@@ -39,7 +39,7 @@ const applyOffersToProducts = async (products) => {
       endDate: { gte: currentDate },
     },
     include: {
-      offerProducts: true,
+      offerTargets: true,
     },
   });
 
@@ -59,7 +59,7 @@ const applyOffersToProducts = async (products) => {
 
     activeOffers.forEach((offer) => {
       // Check if offer applies to this product
-      const appliesToProduct = offer.offerProducts.some(
+      const appliesToProduct = offer.offerTargets.some(
         (op) => op.productId === product.id || op.categoryId === product.categoryId
       );
 
@@ -114,14 +114,14 @@ const getActiveOfferTargetIds = async () => {
       startDate: { lte: currentDate },
       endDate: { gte: currentDate },
     },
-    include: { offerProducts: true },
+    include: { offerTargets: true },
   });
 
   const targetedProductIds = new Set();
   const targetedCategoryIds = new Set();
 
   activeOffers.forEach((offer) => {
-    offer.offerProducts.forEach((op) => {
+    offer.offerTargets.forEach((op) => {
       if (op.productId) targetedProductIds.add(op.productId);
       if (op.categoryId) targetedCategoryIds.add(op.categoryId);
     });

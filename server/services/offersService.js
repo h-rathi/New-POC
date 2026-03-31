@@ -22,7 +22,7 @@ const getActiveOffers = async (offerId) => {
   const activeOffers = await prisma.offer.findMany({
     where: whereClause,
     include: {
-      offerProducts: true, // Includes associated productIds and categoryIds
+      offerTargets: true, // Includes associated productIds and categoryIds
     },
   });
 
@@ -35,7 +35,7 @@ const getActiveOffers = async (offerId) => {
   const targetedCategoryIds = new Set();
 
   activeOffers.forEach((offer) => {
-    offer.offerProducts.forEach((op) => {
+    offer.offerTargets.forEach((op) => {
       if (op.productId) targetedProductIds.add(op.productId);
       if (op.categoryId) targetedCategoryIds.add(op.categoryId);
     });
