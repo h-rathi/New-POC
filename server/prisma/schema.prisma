@@ -33,8 +33,8 @@ model Product {
   // Back relation for bulk upload items
   bulkUploadItems bulk_upload_item[] @relation("ProductBulkItems")
   CartItem        CartItem[]
-   variant_attributes Json?
-   offerTargets OfferTarget[]
+  variant_attributes Json?
+  offerProducts OfferProduct[]
 }
 
 model Image {
@@ -63,7 +63,6 @@ model User {
   country           String?
   postalCode        String?
   customerOrders    Customer_order[]
-  cohortUsers       CohortUser[]
 }
 
 model Customer_order {
@@ -102,7 +101,7 @@ model Category {
   id       String    @id @default(uuid())
   name     String    @unique
   products Product[] // Define a one-to-many relationship
-  offerTargets OfferTarget[]
+  offerProducts OfferProduct[]
 }
 
 model Wishlist {
@@ -281,8 +280,6 @@ enum DiscountType {
 enum OfferScope {
   PRODUCT
   CATEGORY
-  COHORT
-  GLOBAL
 }
 
 model Offer {
@@ -298,16 +295,14 @@ model Offer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  offerTargets  OfferTarget[]
+  offerProducts OfferProduct[]
 }
 
-// NOTE: At least ONE of productId, categoryId, or cohortId must be present in OfferTarget.
-model OfferTarget {
+model OfferProduct {
   id         String    @id @default(uuid())
   offerId    String
   productId  String?
   categoryId String?
-  cohortId   String?
 
   offer      Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
   product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -316,19 +311,4 @@ model OfferTarget {
   @@index([offerId])
   @@index([productId])
   @@index([categoryId])
-  @@index([cohortId])
-}
-
-model CohortUser {
-  id        String    @id @default(uuid())
-  cohortId  String
-  userId    String
-  addedAt   DateTime
-  removedAt DateTime?
-
-  user      User      @relation(fields: [userId], references: [id])
-
-  @@unique([cohortId, userId])
-  @@index([cohortId])
-  @@index([userId])
 }
