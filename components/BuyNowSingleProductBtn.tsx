@@ -2,7 +2,7 @@
 // Role of the component: Buy Now button that adds product to the cart and redirects to the checkout page
 // Name of the component: BuyNowSingleProductBtn.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.1 (PostHog tracking added)
+// Version: 1.3 (Schema aligned for GTM + PostHog)
 // *********************
 
 "use client";
@@ -38,21 +38,43 @@ const BuyNowSingleProductBtn = ({
     calculateTotals();
     toast.success("Product added to the cart");
 
-    // 2️⃣ Analytics — intent
-    posthog.capture("buy_now_clicked", withIsLoggedIn({
+    // 2️⃣ Analytics — intent (buy_now_clicked)
+    const buyNowPayload = withIsLoggedIn({
       product_id: product?.id,
       product_name: product?.title,
       price: product?.price,
       quantity: quantityCount,
       value: product?.price * quantityCount,
       source: "single_product_page",
-    }, isLoggedIn));
+    }, isLoggedIn);
 
-    // 3️⃣ Analytics — funnel step
-    posthog.capture("begin_checkout", withIsLoggedIn({
+    posthog.capture("buy_now_clicked", buyNowPayload);
+
+    // 🔹 GTM push — buy_now_clicked
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "buy_now_clicked",
+        ...buyNowPayload,
+      });
+    }
+
+    // 3️⃣ Analytics — funnel step (begin_checkout)
+    const beginCheckoutPayload = withIsLoggedIn({
       trigger: "buy_now",
       cart_value: product?.price * quantityCount,
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("begin_checkout", beginCheckoutPayload);
+
+    // 🔹 GTM push — begin_checkout
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "begin_checkout",
+        ...beginCheckoutPayload,
+      });
+    }
 
     // 4️⃣ Redirect
     router.push("/checkout");
