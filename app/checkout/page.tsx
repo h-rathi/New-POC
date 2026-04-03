@@ -227,17 +227,29 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
 
     // Capture checkout initiated (non-PII)
-    try {
-      posthog.capture("checkout_initiated", withIsLoggedIn({
-        products_count: products.length,
-        cart_value: total,
-        currency: "USD",
-        component: "CheckoutPage",
-      }, isLoggedIn));
-    } catch (err) {
-      // don't block purchase if analytics fails
-      console.warn("PostHog capture failed (checkout_initiated):", err);
-    }
+try {
+  const checkoutPayload = withIsLoggedIn({
+    products_count: products.length,
+    cart_value: total,
+    currency: "USD",
+    component: "CheckoutPage",
+  }, isLoggedIn);
+
+  posthog.capture("checkout_initiated", checkoutPayload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "checkout_initiated",
+      ...checkoutPayload,
+    });
+  }
+
+} catch (err) {
+  // don't block purchase if analytics fails
+  console.warn("PostHog capture failed (checkout_initiated):", err);
+}
 
     try {
       console.log("🚀 Starting order creation...");
@@ -374,22 +386,34 @@ const CheckoutPage = () => {
       }
 
       // Capture purchase (non-PII — no address or personal fields)
-      try {
-        posthog.capture("thank_you_page_final_step", withIsLoggedIn({
-          order_id: orderId,
-          total: total,
-          currency: "USD",
-          products: products.map((p: any) => ({
-            product_id: p.id,
-            quantity: p.amount,
-            price: p.hasDiscount && p.discountedPrice !== undefined ? p.discountedPrice : p.price,
-          })),
-          user_id: userId || null,
-          component: "CheckoutPage",
-        }, isLoggedIn));
-      } catch (err) {
-        console.warn("PostHog capture failed (purchase):", err);
-      }
+try {
+  const purchasePayload = withIsLoggedIn({
+    order_id: orderId,
+    total: total,
+    currency: "USD",
+    products: products.map((p: any) => ({
+      product_id: p.id,
+      quantity: p.amount,
+      price: p.hasDiscount && p.discountedPrice !== undefined ? p.discountedPrice : p.price,
+    })),
+    user_id: userId || null,
+    component: "CheckoutPage",
+  }, isLoggedIn);
+
+  posthog.capture("thank_you_page_final_step", purchasePayload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "thank_you_page_final_step",
+      ...purchasePayload,
+    });
+  }
+
+} catch (err) {
+  console.warn("PostHog capture failed (purchase):", err);
+}
 
       const payloadData = {
         orderId,
@@ -537,15 +561,27 @@ const CheckoutPage = () => {
     if (!hasHydrated) return;
 
     // Track checkout page view (non-PII)
-    try {
-      posthog.capture("checkout_viewed", withIsLoggedIn({
-        products_count: products.length,
-        cart_value: total,
-        component: "CheckoutPage",
-      }, isLoggedIn));
-    } catch (err) {
-      console.warn("PostHog capture failed (checkout_viewed):", err);
-    }
+try {
+  const checkoutViewedPayload = withIsLoggedIn({
+    products_count: products.length,
+    cart_value: total,
+    component: "CheckoutPage",
+  }, isLoggedIn);
+
+  posthog.capture("checkout_viewed", checkoutViewedPayload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "checkout_viewed",
+      ...checkoutViewedPayload,
+    });
+  }
+
+} catch (err) {
+  console.warn("PostHog capture failed (checkout_viewed):", err);
+}
 
     if (products.length === 0) {
       toast.error("You don't have items in your cart");
