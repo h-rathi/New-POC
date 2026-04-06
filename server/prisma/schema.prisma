@@ -35,12 +35,18 @@ model Product {
   CartItem        CartItem[]
   variant_attributes Json?
   offerProducts OfferProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Image {
   imageID   String @id @default(uuid())
   productID String
   image     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model User {
@@ -51,6 +57,8 @@ model User {
   lastName          String?
   role              String?             @default("user")
   registeredAt      DateTime            @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
   Wishlist          Wishlist[]
   notifications     Notification[]
   // Back relation for bulk upload batches
@@ -86,6 +94,9 @@ model Customer_order {
   user        User?                    @relation(fields: [userId], references: [id])
   cartId      String?
   cart        Cart?                    @relation(fields: [cartId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model customer_order_product {
@@ -95,6 +106,9 @@ model customer_order_product {
   product         Product        @relation(fields: [productId], references: [id])
   productId       String
   quantity        Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Category {
@@ -102,6 +116,9 @@ model Category {
   name     String    @unique
   products Product[] // Define a one-to-many relationship
   offerProducts OfferProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Wishlist {
@@ -110,6 +127,9 @@ model Wishlist {
   productId String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 enum NotificationType {
@@ -137,7 +157,7 @@ model Notification {
   priority  NotificationPriority @default(NORMAL)
   metadata  Json?
   createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  updatedAt DateTime?             @updatedAt
 
   @@index([userId])
   @@index([userId, isRead])
@@ -154,7 +174,7 @@ model Merchant {
   address     String?
   status      String   @default("ACTIVE")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime? @updatedAt
 
   // relasi
   products Product[]
@@ -164,6 +184,7 @@ model bulk_upload_batch {
   id         String             @id @default(uuid())
   fileName   String?
   createdAt  DateTime           @default(now())
+  updatedAt DateTime? @updatedAt
   status     BulkUploadStatus   @default(PENDING)
   itemCount  Int                @default(0)
   errorCount Int                @default(0)
@@ -195,6 +216,9 @@ model bulk_upload_item {
 
   status BulkUploadItemStatus @default(CREATED)
   error  String?              @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 enum BulkUploadStatus {
@@ -229,7 +253,7 @@ model Cart {
   customerOrders Customer_order[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime? @updatedAt
 
   @@index([userId])
   @@index([cartToken])
@@ -266,7 +290,7 @@ model CartItem {
   isRemoved Boolean @default(false)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime? @updatedAt
 
   @@index([cartId])
   @@index([productId])
@@ -293,7 +317,7 @@ model Offer {
   endDate       DateTime
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  updatedAt     DateTime?       @updatedAt
 
   offerProducts OfferProduct[]
 }
@@ -307,6 +331,9 @@ model OfferProduct {
   offer      Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
   product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([offerId])
   @@index([productId])
