@@ -2,7 +2,7 @@
 // Role of the component: IntroducingSection with the text "Introducing Singitronic"
 // Name of the component: IntroducingSection.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.1 (PostHog tracking added)
+// Version: 1.2 (GTM dataLayer added + correct event)
 // *********************
 
 "use client";
@@ -19,16 +19,44 @@ const IntroducingSection = () => {
 
   // Track section impression once
   useEffect(() => {
-    posthog.capture("introducing_section_viewed", withIsLoggedIn({
+    const viewPayload = withIsLoggedIn({
       component: "IntroducingSection",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("introducing_section_viewed", viewPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "introducing_section_viewed",
+        ...viewPayload,
+      });
+    }
   }, [isLoggedIn]);
 
   const variant = useFeatureFlagVariantKey('test1');
   const router = useRouter();
 
   const handleClick = () => {
-    posthog.capture("shop_now_clicked", withIsLoggedIn(undefined, isLoggedIn));
+    const ctaPayload = withIsLoggedIn({
+      cta: "shop_now",
+      destination: "/shop",
+      component: "IntroducingSection",
+    }, isLoggedIn);
+
+    // ✅ Updated event name
+    posthog.capture("introducing_section_cta_clicked", ctaPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "introducing_section_cta_clicked",
+        ...ctaPayload,
+      });
+    }
+
     router.push('/shop');
   };
 

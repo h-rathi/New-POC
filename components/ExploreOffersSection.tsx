@@ -9,17 +9,39 @@ const ExploreOffersSection = () => {
   const isLoggedIn = useIsLoggedInValue();
 
   useEffect(() => {
-    posthog.capture("explore_offers_section_viewed", withIsLoggedIn({
+    const viewPayload = withIsLoggedIn({
       component: "ExploreOffersSection",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("explore_offers_section_viewed", viewPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "explore_offers_section_viewed",
+        ...viewPayload,
+      });
+    }
   }, [isLoggedIn]);
 
   const handleCtaClick = () => {
-    posthog.capture("explore_offers_cta_clicked", withIsLoggedIn({
+    const ctaPayload = withIsLoggedIn({
       cta: "view_all_deals",
       destination: "/offers",
       component: "ExploreOffersSection",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("explore_offers_cta_clicked", ctaPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "explore_offers_cta_clicked",
+        ...ctaPayload,
+      });
+    }
   };
 
   return (

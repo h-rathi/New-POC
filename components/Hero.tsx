@@ -2,7 +2,7 @@
 // Role of the component: Classical hero component on home page
 // Name of the component: Hero.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.1 (PostHog tracking added)
+// Version: 1.2 (GTM dataLayer added)
 // *********************
 
 "use client";
@@ -18,18 +18,41 @@ const Hero = () => {
 
   // Track hero impression once
   useEffect(() => {
-    posthog.capture("hero_viewed", withIsLoggedIn({
+    const heroViewPayload = withIsLoggedIn({
       component: "Hero",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("hero_viewed", heroViewPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "hero_viewed",
+        ...heroViewPayload,
+      });
+    }
   }, [isLoggedIn]);
 
   const router = useRouter();
 
   const handleCtaClick = (cta: "buy_now" | "learn_more") => {
-    posthog.capture("hero_cta_clicked", withIsLoggedIn({
+    const ctaPayload = withIsLoggedIn({
       cta,
       component: "Hero",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("hero_cta_clicked", ctaPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "hero_cta_clicked",
+        ...ctaPayload,
+      });
+    }
+
     router.push("/product/smart-watch-demo");
   };
 

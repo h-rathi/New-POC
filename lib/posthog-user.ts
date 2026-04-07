@@ -21,7 +21,19 @@ export const trackSuccessfulLogin = (userId: string) => {
   }
 
   posthog.identify(userId);
-  posthog.capture("login_successful", {
+
+  const payload = {
     user_id: userId,
-  });
+  };
+
+  posthog.capture("login_successful", payload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "login_successful",
+      ...payload,
+    });
+  }
 };

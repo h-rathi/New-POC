@@ -66,12 +66,22 @@ const Header = () => {
   }, [session?.user?.email, wishlist.length]);
 
   const trackLogoClick = (area: "user" | "admin") => {
-    posthog.capture("header_logo_clicked", withIsLoggedIn({
-      action: "GNB_interaction",
-      area,
-      component: "Header",
-    }, isLoggedIn));
-  };
+  const payload = withIsLoggedIn({
+    area,
+    component: "Header",
+  }, isLoggedIn);
+
+  posthog.capture("header_logo_clicked", payload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "header_logo_clicked",
+      ...payload,
+    });
+  }
+};
 
   const trackAdminMenuClick = (label: string) => {
     posthog.capture("admin_menu_clicked", withIsLoggedIn({

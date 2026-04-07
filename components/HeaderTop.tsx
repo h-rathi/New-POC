@@ -2,7 +2,7 @@
 // Role of the component: Topbar of the header
 // Name of the component: HeaderTop.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.1 (PostHog tracking added)
+// Version: 1.2 (GTM dataLayer added)
 // *********************
 
 "use client";
@@ -20,18 +20,40 @@ const HeaderTop = () => {
   const isLoggedIn = getIsLoggedInValue(session);
 
   const handleLogout = () => {
-    posthog.capture("header_top_logout_clicked", withIsLoggedIn({
+    const logoutPayload = withIsLoggedIn({
       component: "HeaderTop",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture("header_top_logout_clicked", logoutPayload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "header_top_logout_clicked",
+        ...logoutPayload,
+      });
+    }
 
     setTimeout(() => signOut(), 1000);
     toast.success("Logout successful!");
   };
 
   const trackAuthClick = (type: "login" | "register") => {
-    posthog.capture(`header_top_${type}_clicked`, withIsLoggedIn({
+    const payload = withIsLoggedIn({
       component: "HeaderTop",
-    }, isLoggedIn));
+    }, isLoggedIn);
+
+    posthog.capture(`header_top_${type}_clicked`, payload);
+
+    // 🔹 GTM dataLayer push (NEW)
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: `header_top_${type}_clicked`,
+        ...payload,
+      });
+    }
   };
 
   const trackContactClick = (type: "phone" | "email") => {
@@ -45,8 +67,6 @@ const HeaderTop = () => {
     <div className="h-10 text-white bg-blue-500 max-lg:px-5 max-lg:h-16 max-[573px]:px-0">
       <div className="flex justify-between h-full max-lg:flex-col max-lg:justify-center max-lg:items-center max-w-screen-2xl mx-auto px-12 max-[573px]:px-0">
         
-
-
         {/* Auth links */}
         <ul className="flex items-center gap-x-5 h-full max-[370px]:text-sm max-[370px]:gap-x-2 font-semibold">
           {!session ? (

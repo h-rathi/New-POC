@@ -45,13 +45,25 @@ export default function ScrollDepthTracker() {
           !trackedDepthsRef.current.has(depth)
         ) {
           trackedDepthsRef.current.add(depth);
-          posthog.capture("scroll_depth", withIsLoggedIn({
+
+          const payload = withIsLoggedIn({
             scroll_depth_percentage: depth,
             page_path: pathname,
             page_query: searchParams?.toString() || "",
             page_url: window.location.href,
             page_title: document.title,
-          }, isLoggedIn));
+          }, isLoggedIn);
+
+          posthog.capture("scroll_depth", payload);
+
+          // 🔹 GTM dataLayer push (NEW)
+          if (typeof window !== "undefined") {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: "scroll_depth",
+              ...payload,
+            });
+          }
         }
       });
     };
