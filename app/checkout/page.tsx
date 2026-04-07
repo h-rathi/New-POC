@@ -36,6 +36,18 @@ const CheckoutPage = () => {
   const { products, total, clearCart } = useProductStore();
   const router = useRouter();
 
+  const captureCheckoutEvent = (event: string, payload: Record<string, unknown>) => {
+    posthog.capture(event, payload);
+
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event,
+        ...payload,
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (session?.user?.email) {
@@ -235,16 +247,7 @@ try {
     component: "CheckoutPage",
   }, isLoggedIn);
 
-  posthog.capture("checkout_initiated", checkoutPayload);
-
-  // 🔹 GTM dataLayer push (NEW)
-  if (typeof window !== "undefined") {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "checkout_initiated",
-      ...checkoutPayload,
-    });
-  }
+  captureCheckoutEvent("checkout_initiated", checkoutPayload);
 
 } catch (err) {
   // don't block purchase if analytics fails
@@ -317,10 +320,12 @@ try {
             toast.error(errorData.details || errorData.error || "Duplicate order detected");
             // capture failure
             try {
-              posthog.capture("checkout_failed", withIsLoggedIn({
+              const checkoutFailedPayload = withIsLoggedIn({
                 reason: "duplicate_order",
                 component: "CheckoutPage",
-              }, isLoggedIn));
+              }, isLoggedIn);
+
+              captureCheckoutEvent("checkout_failed", checkoutFailedPayload);
             } catch (err) { }
             return; // Don't throw, just return to stop execution
           } else if (errorData.details && Array.isArray(errorData.details)) {
@@ -342,10 +347,12 @@ try {
 
         // capture generic failure
         try {
-          posthog.capture("checkout_failed", withIsLoggedIn({
+          const checkoutFailedPayload = withIsLoggedIn({
             reason: `http_${response.status}`,
             component: "CheckoutPage",
-          }, isLoggedIn));
+          }, isLoggedIn);
+
+          captureCheckoutEvent("checkout_failed", checkoutFailedPayload);
         } catch (err) { }
         return; // Stop execution instead of throwing
       }
@@ -400,16 +407,7 @@ try {
     component: "CheckoutPage",
   }, isLoggedIn);
 
-  posthog.capture("thank_you_page_final_step", purchasePayload);
-
-  // 🔹 GTM dataLayer push (NEW)
-  if (typeof window !== "undefined") {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "thank_you_page_final_step",
-      ...purchasePayload,
-    });
-  }
+  captureCheckoutEvent("thank_you_page_final_step", purchasePayload);
 
 } catch (err) {
   console.warn("PostHog capture failed (purchase):", err);
@@ -471,10 +469,12 @@ try {
 
       // capture failure with generic message if available
       try {
-        posthog.capture("checkout_failed", withIsLoggedIn({
+        const checkoutFailedPayload = withIsLoggedIn({
           error: error?.message || String(error),
           component: "CheckoutPage",
-        }, isLoggedIn));
+        }, isLoggedIn);
+
+        captureCheckoutEvent("checkout_failed", checkoutFailedPayload);
       } catch (err) { }
 
       // Handle server validation errors
@@ -568,16 +568,7 @@ try {
     component: "CheckoutPage",
   }, isLoggedIn);
 
-  posthog.capture("checkout_viewed", checkoutViewedPayload);
-
-  // 🔹 GTM dataLayer push (NEW)
-  if (typeof window !== "undefined") {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "checkout_viewed",
-      ...checkoutViewedPayload,
-    });
-  }
+  captureCheckoutEvent("checkout_viewed", checkoutViewedPayload);
 
 } catch (err) {
   console.warn("PostHog capture failed (checkout_viewed):", err);

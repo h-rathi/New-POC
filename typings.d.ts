@@ -18,6 +18,10 @@ interface Product {
   discountValue?: number;
 }
 
+interface Window {
+  dataLayer?: Array<Record<string, unknown>>;
+}
+
 interface Merchant {
   id: string;
   name: string;
