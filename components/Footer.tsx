@@ -31,17 +31,28 @@ const Footer = () => {
   }, []);
 
   const trackFooterClick = (
-    label: string,
-    href: string,
-    section: string
-  ) => {
-    posthog.capture("footer_link_clicked", withIsLoggedIn({
-      label,
-      destination: href,
-      section,
-      component: "Footer",
-    }, isLoggedIn));
-  };
+  label: string,
+  href: string,
+  section: string
+) => {
+  const payload = withIsLoggedIn({
+    label,
+    destination: href,
+    section,
+    component: "Footer",
+  }, isLoggedIn);
+
+  posthog.capture("footer_link_clicked", payload);
+
+  // 🔹 GTM dataLayer push (NEW)
+  if (typeof window !== "undefined") {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "footer_link_clicked",
+      ...payload,
+    });
+  }
+};
 
   return (
     <footer className="bg-white" aria-labelledby="footer-heading">
