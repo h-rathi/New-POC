@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/utils/db";
+import { captureEvent } from "@/lib/posthog-server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -31,20 +32,23 @@ async function findOrCreateCart({
 }: {
   userId?: string | null;
   cartToken?: string | null;
-}) {
+}): Promise<{ cart: any | null; created: boolean }> {
   let cart = null;
+  let created = false;
   if (userId) {
     cart = await prisma.cart.findFirst({ where: { userId } });
     if (!cart) {
       cart = await prisma.cart.create({ data: { userId } });
+      created = true;
     }
   } else if (cartToken) {
     cart = await prisma.cart.findFirst({ where: { cartToken } });
     if (!cart) {
       cart = await prisma.cart.create({ data: { cartToken } });
+      created = true;
     }
   }
-  return cart;
+  return { cart, created };
 }
 
 // read-only lookup (does not create)
@@ -86,6 +90,19 @@ export async function GET(req: NextRequest) {
         where: { cartToken },
         include: { items: { where: { isRemoved: false } } },
       });
+    }
+
+    // Emit analytics: if an existing cart was loaded (no new id created)
+    if (cart) {
+      try {
+        await captureEvent("cart_loaded", {
+          loaded: true,
+          cartId: cart.id,
+          cartToken: cart.cartToken ?? cartToken ?? null,
+        });
+      } catch (err) {
+        /* swallow analytics errors */
+      }
     }
 
     // If there is no identifier at all we simply return an empty cart – never 500
@@ -142,12 +159,31 @@ export async function POST(req: NextRequest) {
       itemCount: items.length,
     });
 
-    const cart = await findOrCreateCart({ userId, cartToken });
+    const { cart, created } = await findOrCreateCart({ userId, cartToken });
     if (!cart) {
       return NextResponse.json(
         { error: "Unable to determine cart owner. Please clear cookies and try again." },
         { status: 400 }
       );
+    }
+
+    // Analytics: cart created vs reused
+    try {
+      if (created) {
+        await captureEvent("cart_created", {
+          created: true,
+          cartId: cart.id,
+          cartToken: cart.cartToken ?? cartToken ?? null,
+        });
+      } else {
+        await captureEvent("cart_loaded", {
+          loaded: true,
+          cartId: cart.id,
+          cartToken: cart.cartToken ?? cartToken ?? null,
+        });
+      }
+    } catch (err) {
+      /* swallow analytics errors */
     }
 
     // fetch all existing items (including those previously removed)
