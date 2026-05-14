@@ -7,6 +7,11 @@ const nextConfig = {
             hostname: 'placehold.co',
             port: ""
           },
+          {
+            protocol: 'https',
+            hostname: 'product-analysis-poc.s3.amazonaws.com',
+            port: ""
+          },
         ],
       },
     env: {

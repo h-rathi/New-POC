@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth/next";
 import "svgmap/dist/svgMap.min.css";
 
 import SessionProvider from "@/utils/SessionProvider";
-import Header from "@/components/Header";
+import Navbar from "@/components/gnb/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "@/Providers";
 import SessionTimeoutWrapper from "@/components/SessionTimeoutWrapper";
@@ -66,7 +66,7 @@ export default async function RootLayout({
           <CartSyncClient />
           <ScrollDepthTracker />
           <SessionTimeoutWrapper />
-          <Header />
+          <Navbar />
           <Providers>{children}</Providers>
           <Footer />
         </SessionProvider>

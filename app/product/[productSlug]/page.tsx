@@ -16,6 +16,7 @@ import { FaSquareXTwitter } from "react-icons/fa6";
 import { FaSquarePinterest } from "react-icons/fa6";
 import { sanitize } from "@/lib/sanitize";
 
+
 interface ImageItem {
   imageID: string;
   productID: string;
@@ -43,6 +44,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   if (!product || product.error) {
     notFound();
   }
+
 
   return (
     <div className="bg-white">

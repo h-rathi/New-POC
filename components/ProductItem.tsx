@@ -54,7 +54,7 @@ const ProductItem = ({
     <div className="flex flex-col items-center gap-y-2">
       {/* Image with Top Left Discount Pill */}
       <Link
-        href={`/product/${product.slug}`}
+        href={product?.slug === "Xiaomi Pad 6 Variant 4" || product?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${product.slug}` : `/product/${product.slug}`}
         onClick={() => handleProductClick("image")}
         className="relative flex h-[250px] w-full items-center justify-center overflow-hidden bg-white p-4"
       >
@@ -90,7 +90,7 @@ const ProductItem = ({
 
       {/* Title */}
       <Link
-        href={`/product/${product.slug}`}
+        href={product?.slug === "Xiaomi Pad 6 Variant 4" || product?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${product.slug}` : `/product/${product.slug}`}
         onClick={() => handleProductClick("title")}
         className={
           color === "black"
@@ -123,7 +123,7 @@ const ProductItem = ({
 
       {/* CTA */}
       <Link
-        href={`/product/${product.slug}`}
+        href={product?.slug === "Xiaomi Pad 6 Variant 4" || product?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${product.slug}` : `/product/${product.slug}`}
         onClick={() => handleProductClick("cta")}
         className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
       >
