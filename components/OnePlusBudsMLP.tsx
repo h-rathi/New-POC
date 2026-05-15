@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
 import { sanitize } from "@/lib/sanitize";
+import MlpAnalyticsWrapper, { trackMlpBuyNowClick } from "@/components/MlpAnalyticsWrapper";
+import { useIsLoggedInValue } from "@/lib/posthog-auth";
 
 interface Product {
   id: string;
@@ -70,12 +72,15 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
   const batteryLife = attr.battery_life || product?.battery_life || "Up to 38 hours";
   const waterResistance = attr.water_resistance || product?.water_resistance || "IP55 Rating";
 
+  const isLoggedIn = useIsLoggedInValue();
+
   return (
     // Base dark theme wrapper with cinematic OnePlus vibe
+    <MlpAnalyticsWrapper slug="oneplus-buds-pro-3">
     <div className="w-full bg-black text-white font-sans tracking-tight overflow-hidden">
       
       {/* 1. HERO SECTION */}
-      <section className="relative w-full min-h-screen flex items-center justify-center pt-16 pb-20 overflow-hidden bg-black">
+      <section data-mlp-section="hero" className="relative w-full min-h-screen flex items-center justify-center pt-16 pb-20 overflow-hidden bg-black">
         {/* Glow Effects - OnePlus aesthetic (Red & Cyan) */}
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -111,6 +116,7 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
             <div className="pt-8 w-full flex justify-center md:justify-start">
               <Link
                 href="/product/OnePlus%20Buds%20Pro%203%20Variant%207"
+                onClick={() => trackMlpBuyNowClick("oneplus-buds-pro-3", isLoggedIn)}
                 className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold tracking-wide text-white transition-all duration-300 ease-in-out rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:scale-105 hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] overflow-hidden"
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -139,7 +145,7 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
       </section>
 
       {/* 2. DYNAMIC TECHNICAL FEATURES SECTION */}
-      <section className="py-24 relative bg-black z-20">
+      <section data-mlp-section="technical_features" className="py-24 relative bg-black z-20">
         <div className="max-w-screen-xl mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
@@ -196,7 +202,7 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
       </section>
 
       {/* 3. AUDIO QUALITY SECTION */}
-      <section className="bg-black py-32 border-t border-neutral-900 overflow-hidden">
+      <section data-mlp-section="audio_quality" className="bg-black py-32 border-t border-neutral-900 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto px-6 md:px-12 lg:px-24 flex flex-col md:flex-row items-center gap-16">
           <FadeInSection className="w-full md:w-1/2 relative group">
             <div className="absolute inset-0 bg-red-600/10 blur-3xl rounded-full z-0 translate-y-4 pointer-events-none"></div>
@@ -221,7 +227,7 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
       </section>
 
       {/* 4. PERFORMANCE SECTION */}
-      <section className="bg-black py-32 border-t border-neutral-900 overflow-hidden">
+      <section data-mlp-section="performance" className="bg-black py-32 border-t border-neutral-900 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto px-6 md:px-12 lg:px-24 flex flex-col md:flex-row-reverse items-center gap-16">
           <FadeInSection className="w-full md:w-1/2 relative group">
             <div className="absolute inset-0 bg-cyan-500/10 blur-3xl rounded-full z-0 translate-y-4 pointer-events-none"></div>
@@ -246,7 +252,7 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
       </section>
 
       {/* 5. LIFESTYLE SECTION */}
-      <section className="relative w-full min-h-[80vh] flex items-center justify-center bg-black overflow-hidden border-t border-neutral-900">
+      <section data-mlp-section="lifestyle" className="relative w-full min-h-[80vh] flex items-center justify-center bg-black overflow-hidden border-t border-neutral-900">
         {/* Background Image with Dark Overlay */}
         <div className="absolute inset-0 z-0">
           <Image 
@@ -283,5 +289,6 @@ export default function OnePlusBudsMLP({ product }: MLPProps) {
       `}} />
 
     </div>
+    </MlpAnalyticsWrapper>
   );
 }
