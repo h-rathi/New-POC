@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
 import { sanitize } from "@/lib/sanitize";
+import posthog from "posthog-js";
+import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 
 interface ProductDropdownProps {
   category: string;
@@ -86,7 +88,43 @@ export default function ProductDropdown({ category, isActive = false, onClose }:
     router.push(`/shop?category=${encodeURIComponent(category.toLowerCase())}`);
   };
 
-  const handleProductClick = () => {
+  const isLoggedIn = useIsLoggedInValue();
+
+  const handleProductClick = (productName: string, productSlug: string) => {
+    const payload = withIsLoggedIn({
+      product_name: productName,
+      product_slug: productSlug,
+      category,
+      destination_type: "PDP",
+      component: "GNB_MegaMenu",
+    }, isLoggedIn);
+
+    posthog.capture("gnb_product_clicked", payload);
+
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "gnb_product_clicked", ...payload });
+    }
+
+    if (onClose) onClose();
+  };
+
+  const handleMlpClick = (productName: string, slug: string) => {
+    const payload = withIsLoggedIn({
+      product_name: productName,
+      slug,
+      category,
+      destination_type: "MLP",
+      component: "GNB_ExplorePremium",
+    }, isLoggedIn);
+
+    posthog.capture("gnb_mlp_clicked", payload);
+
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "gnb_mlp_clicked", ...payload });
+    }
+
     if (onClose) onClose();
   };
 
@@ -122,7 +160,7 @@ export default function ProductDropdown({ category, isActive = false, onClose }:
                     <Link 
                       key={product.id} 
                       href={productHref}
-                      onClick={handleProductClick}
+                      onClick={() => handleProductClick(sanitize(product.title) || '', product.slug || '')}
                       className="flex flex-col group/card rounded-xl hover:bg-gray-50 transition-all p-3 border border-transparent hover:border-gray-100"
                     >
                       <div className="relative h-[120px] w-full mb-4 overflow-hidden bg-white rounded-lg flex items-center justify-center mix-blend-multiply">
@@ -190,7 +228,7 @@ export default function ProductDropdown({ category, isActive = false, onClose }:
                       <Link 
                         key={idx}
                         href={`/${category.toLowerCase()}/${link.slug}`}
-                        onClick={handleProductClick}
+                        onClick={() => handleMlpClick(link.title, link.slug)}
                         className={`group relative flex items-center p-4 rounded-2xl bg-white border border-blue-100/50 shadow-sm transition-all duration-300 pointer-events-auto hover:-translate-y-1 hover:scale-[1.02] ${link.glow} overflow-hidden`}
                       >
                         {/* Text Content */}
