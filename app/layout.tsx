@@ -30,7 +30,13 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme="light">
       <head>
-        <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="6b19f2ad-13a2-429f-abd2-ea789f29fec5" data-blockingmode="auto" type="text/javascript"></script>
+        <Script
+          id="Cookiebot"
+          src="https://consent.cookiebot.com/uc.js"
+          data-cbid="6b19f2ad-13a2-429f-abd2-ea789f29fec5"
+          data-blockingmode="auto"
+          strategy="beforeInteractive"
+        />
         {/* Google Tag Manager */}
         <Script
           id="gtm-script"
