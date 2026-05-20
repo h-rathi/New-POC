@@ -94,12 +94,33 @@ const ProductItem = ({
         onClick={() => handleProductClick("title")}
         className={
           color === "black"
-            ? "text-xl text-black font-normal mt-2 uppercase"
-            : "text-xl text-white font-normal mt-2 uppercase"
+            ? "text-xl text-black font-normal mt-2 uppercase text-center"
+            : "text-xl text-white font-normal mt-2 uppercase text-center"
         }
       >
-        {sanitize(product.title)}
+        {sanitize((product as any).displayTitle || product.title)}
       </Link>
+
+      {/* Variant Preview */}
+      {(product as any).variantsList && (product as any).variantsList.length > 1 && (
+        <div className="flex flex-col items-center mt-1">
+          <p className="text-xs text-gray-500 mb-1 font-medium">
+            {(product as any).variantsList.length} options available
+          </p>
+          <div className="flex gap-1.5 mt-0.5">
+            {Array.from(new Set((product as any).variantsList.map((v: any) => v.variant_attributes?.Color || v.variant_attributes?.color).filter(Boolean)))
+              .slice(0, 5)
+              .map((colorStr: any, idx: number) => (
+               <span 
+                 key={idx} 
+                 title={colorStr} 
+                 className="w-4 h-4 rounded-full border border-gray-300 shadow-sm" 
+                 style={{ backgroundColor: colorStr.toLowerCase().replace(/ /g, '') }} 
+               />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Price */}
       <PriceRenderer
