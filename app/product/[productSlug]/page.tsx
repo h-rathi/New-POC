@@ -5,7 +5,7 @@ import {
   ProductTabs,
   SingleProductDynamicFields,
   PriceRenderer,
-  
+  VariantSelector,
 } from "@/components";
 import apiClient from "@/lib/api";
 import Image from "next/image";
@@ -49,8 +49,9 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   return (
     <div className="bg-white">
       <div className="max-w-screen-2xl mx-auto">
-        <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-center gap-y-5 px-5">
-          <div className="w-full max-w-[560px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-10 px-5">
+          {/* Image Gallery Column */}
+          <div className="w-full lg:col-span-7 flex flex-col items-center">
             <div className="relative mx-auto flex h-[320px] w-full max-w-[560px] items-center justify-center overflow-hidden rounded-lg bg-white p-4 sm:h-[420px] lg:h-[500px]">
               <Image
                 src={
@@ -84,7 +85,9 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-y-7 text-black max-[500px]:text-center">
+
+          {/* Product Info Column */}
+          <div className="flex flex-col gap-y-4 text-black max-[500px]:text-center lg:col-span-5 sticky top-24 self-start">
         
             <h1 className="text-3xl">{sanitize(product?.title)}</h1>
             <PriceRenderer 
@@ -104,6 +107,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
               </div>
             )}
             <StockAvailabillity stock={94} inStock={product?.inStock} />
+            <VariantSelector product={product} variants={product?.variants || []} />
             <SingleProductDynamicFields product={product} />
             
           </div>

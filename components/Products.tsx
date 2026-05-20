@@ -51,14 +51,14 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
 
   let products = [];
 
-  try {
-    // determine which category we should filter by; this value will
-    // be logged so that it's easier to debug client behavior.
-    let slug = categorySlug;
-    if (!slug && typeof searchParams.category === "string") {
-      slug = searchParams.category;
-    }
+  // determine which category we should filter by; this value will
+  // be logged so that it's easier to debug client behavior.
+  let slug = categorySlug;
+  if (!slug && typeof searchParams.category === "string") {
+    slug = searchParams.category;
+  }
 
+  try {
     // build the url before firing the request so we can inspect it in devtools
     const url = `/api/products?filters[price][$lte]=${searchParams?.price || 10000
       }&filters[rating][$gte]=${Number(searchParams?.rating) || 0
@@ -82,12 +82,55 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
     products = [];
   }
 
+  let finalProducts = products;
+
+  // Only group variants if we are NOT on a specific category page
+  if (!slug) {
+    // Helper to normalize title
+    const getVariantGroupTitle = (title: string) => {
+      if (!title) return "";
+      return title.replace(/\s+Variant\s+\d+$/i, "").trim();
+    };
+
+    // Group products by normalized title
+    const groupedProductsMap = new Map<string, any>();
+
+    products.forEach((product: any) => {
+      const groupTitle = getVariantGroupTitle(product.title);
+      if (!groupedProductsMap.has(groupTitle)) {
+        groupedProductsMap.set(groupTitle, {
+          ...product,
+          displayTitle: groupTitle,
+          variantsList: [product],
+        });
+      } else {
+        const group = groupedProductsMap.get(groupTitle);
+        group.variantsList.push(product);
+        
+        // Prefer cheapest variant as representative
+        const currentPrice = product.discountedPrice < product.price ? product.discountedPrice : product.price;
+        const groupMinPrice = group.discountedPrice < group.price ? group.discountedPrice : group.price;
+        
+        if (currentPrice < groupMinPrice) {
+          // Swap representative to the cheapest, but keep the accumulated variantsList
+          groupedProductsMap.set(groupTitle, {
+            ...product,
+            displayTitle: groupTitle,
+            variantsList: group.variantsList,
+          });
+        }
+      }
+    });
+
+    finalProducts = Array.from(groupedProductsMap.values());
+  }
+
   return (
     <>
       <PaginationSync hasMore={products.length >= 12} />
       <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
-        {products.length > 0 ? (
-          products.map((product: any) => (
+        {finalProducts.length > 0 ? (
+          finalProducts.map((product: any) => (
             <ProductItem key={product.id} product={product} color="black" />
           ))
         ) : (

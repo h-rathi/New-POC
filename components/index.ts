@@ -51,3 +51,4 @@ export { default as NotificationBell } from "./NotificationBell";
 export { default as NotificationCard } from "./NotificationCard";
 export { default as BulkUploadHistory } from "./BulkUploadHistory";
 export { default as Label } from "./Label";
+export { default as VariantSelector } from "./VariantSelector";
