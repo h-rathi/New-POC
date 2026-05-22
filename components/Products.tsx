@@ -63,7 +63,7 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
     const url = `/api/products?filters[price][$lte]=${searchParams?.price || 10000
       }&filters[rating][$gte]=${Number(searchParams?.rating) || 0
       }${stockFilterParams}${discountFilterParams}${slug ? `&filters[category][$equals]=${encodeURIComponent(slug)}` : ""
-      }&sort=${searchParams?.sort || 'defaultSort'}&page=${page}`;
+      }&sort=${searchParams?.sort || 'defaultSort'}&fetchAll=true`;
 
     // debug output for developers
     console.debug('Products component fetching', url, 'slug=', slug);
@@ -84,53 +84,51 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
 
   let finalProducts = products;
 
-  // Only group variants if we are NOT on a specific category page
-  if (!slug) {
-    // Helper to normalize title
-    const getVariantGroupTitle = (title: string) => {
-      if (!title) return "";
-      return title.replace(/\s+Variant\s+\d+$/i, "").trim();
-    };
+  // Group products by normalized title
+  const getVariantGroupTitle = (title: string) => {
+    if (!title) return "";
+    return title.replace(/\s+Variant\s+\d+$/i, "").trim();
+  };
 
-    // Group products by normalized title
-    const groupedProductsMap = new Map<string, any>();
+  const groupedProductsMap = new Map<string, any>();
 
-    products.forEach((product: any) => {
-      const groupTitle = getVariantGroupTitle(product.title);
-      if (!groupedProductsMap.has(groupTitle)) {
+  products.forEach((product: any) => {
+    const groupTitle = getVariantGroupTitle(product.title);
+    if (!groupedProductsMap.has(groupTitle)) {
+      groupedProductsMap.set(groupTitle, {
+        ...product,
+        displayTitle: groupTitle,
+        variantsList: [product],
+      });
+    } else {
+      const group = groupedProductsMap.get(groupTitle);
+      group.variantsList.push(product);
+      
+      // Prefer cheapest variant as representative
+      const currentPrice = product.discountedPrice < product.price ? product.discountedPrice : product.price;
+      const groupMinPrice = group.discountedPrice < group.price ? group.discountedPrice : group.price;
+      
+      if (currentPrice < groupMinPrice) {
+        // Swap representative to the cheapest, but keep the accumulated variantsList
         groupedProductsMap.set(groupTitle, {
           ...product,
           displayTitle: groupTitle,
-          variantsList: [product],
+          variantsList: group.variantsList,
         });
-      } else {
-        const group = groupedProductsMap.get(groupTitle);
-        group.variantsList.push(product);
-        
-        // Prefer cheapest variant as representative
-        const currentPrice = product.discountedPrice < product.price ? product.discountedPrice : product.price;
-        const groupMinPrice = group.discountedPrice < group.price ? group.discountedPrice : group.price;
-        
-        if (currentPrice < groupMinPrice) {
-          // Swap representative to the cheapest, but keep the accumulated variantsList
-          groupedProductsMap.set(groupTitle, {
-            ...product,
-            displayTitle: groupTitle,
-            variantsList: group.variantsList,
-          });
-        }
       }
-    });
+    }
+  });
 
-    finalProducts = Array.from(groupedProductsMap.values());
-  }
+  finalProducts = Array.from(groupedProductsMap.values());
+  const hasMore = finalProducts.length > page * 12;
+  const paginatedProducts = finalProducts.slice((page - 1) * 12, page * 12);
 
   return (
     <>
-      <PaginationSync hasMore={products.length >= 12} />
+      <PaginationSync hasMore={hasMore} />
       <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
-        {finalProducts.length > 0 ? (
-          finalProducts.map((product: any) => (
+        {paginatedProducts.length > 0 ? (
+          paginatedProducts.map((product: any) => (
             <ProductItem key={product.id} product={product} color="black" />
           ))
         ) : (

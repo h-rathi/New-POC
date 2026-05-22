@@ -88,6 +88,7 @@ const getAllProducts = asyncHandler(async (request, response) => {
     // getting current page with validation
     const page = Number(request.query.page);
     const validatedPage = (page && page > 0) ? page : 1;
+    const fetchAll = request.query.fetchAll === "true";
 
     if (dividerLocation !== -1) {
       // split off raw query string and iterate each component.  we
@@ -240,8 +241,8 @@ const getAllProducts = asyncHandler(async (request, response) => {
         : sortObj;
       
       products = await prisma.product.findMany({
-        skip: (validatedPage - 1) * 10,
-        take: 12,
+        skip: fetchAll ? undefined : (validatedPage - 1) * 10,
+        take: fetchAll ? undefined : 12,
         include: {
           category: {
             select: {
@@ -292,8 +293,8 @@ const getAllProducts = asyncHandler(async (request, response) => {
         
         if (matchedCategory) {
           products = await prisma.product.findMany({
-            skip: (validatedPage - 1) * 10,
-            take: 12,
+            skip: fetchAll ? undefined : (validatedPage - 1) * 10,
+            take: fetchAll ? undefined : 12,
             include: {
               category: {
                 select: {
@@ -313,8 +314,8 @@ const getAllProducts = asyncHandler(async (request, response) => {
         }
       } else {
         products = await prisma.product.findMany({
-          skip: (validatedPage - 1) * 10,
-          take: 12,
+          skip: fetchAll ? undefined : (validatedPage - 1) * 10,
+          take: fetchAll ? undefined : 12,
           include: {
             category: {
               select: {
