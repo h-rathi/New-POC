@@ -7,6 +7,7 @@ import Link from "next/link";
 import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
 import { sanitize } from "@/lib/sanitize";
+import { formatProductTitle } from "@/lib/utils";
 import { PriceRenderer } from "@/components";
 
 export const CartModule = () => {
@@ -57,7 +58,7 @@ export const CartModule = () => {
                     product?.image?.startsWith("http://") ||
                     product?.image?.startsWith("https://")
                   }
-                  alt={sanitize(product?.title) || "Product image"}
+                  alt={sanitize(formatProductTitle(product?.title)) || "Product image"}
                   className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
                 />
               </div>
@@ -71,7 +72,7 @@ export const CartModule = () => {
                           href={`/product/${product.slug || product.id}`}
                           className="font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors"
                         >
-                          {sanitize(product.title)}
+                          {sanitize(formatProductTitle(product.title))}
                         </Link>
                       </h3>
                     </div>

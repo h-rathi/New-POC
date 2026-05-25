@@ -14,6 +14,8 @@ import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
 import PaginationSync from "./PaginationSync";
+import { PriceRangeUpdater } from "./PriceRangeUpdater";
+import { formatProductTitle } from "@/lib/utils";
 
 interface ProductsProps {
   categorySlug: string | null;
@@ -60,8 +62,7 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
 
   try {
     // build the url before firing the request so we can inspect it in devtools
-    const url = `/api/products?filters[price][$lte]=${searchParams?.price || 10000
-      }&filters[rating][$gte]=${Number(searchParams?.rating) || 0
+    const url = `/api/products?filters[rating][$gte]=${Number(searchParams?.rating) || 0
       }${stockFilterParams}${discountFilterParams}${slug ? `&filters[category][$equals]=${encodeURIComponent(slug)}` : ""
       }&sort=${searchParams?.sort || 'defaultSort'}&fetchAll=true`;
 
@@ -85,47 +86,63 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
   let finalProducts = products;
 
   // Group products by normalized title
-  const getVariantGroupTitle = (title: string) => {
-    if (!title) return "";
-    return title.replace(/\s+Variant\s+\d+$/i, "").trim();
-  };
-
   const groupedProductsMap = new Map<string, any>();
+  const selectedPriceLimit = searchParams?.price ? Number(searchParams.price) : 10000;
+
+  let categoryMinPrice = Infinity;
+  let categoryMaxPrice = 0;
 
   products.forEach((product: any) => {
-    const groupTitle = getVariantGroupTitle(product.title);
+    const groupTitle = formatProductTitle(product.title);
+    const productPrice = product.discountedPrice < product.price && product.discountedPrice > 0 
+      ? product.discountedPrice 
+      : product.price;
+
+    const isPriceMatch = productPrice <= selectedPriceLimit;
+
+    if (productPrice < categoryMinPrice) categoryMinPrice = productPrice;
+    if (productPrice > categoryMaxPrice) categoryMaxPrice = productPrice;
+
     if (!groupedProductsMap.has(groupTitle)) {
       groupedProductsMap.set(groupTitle, {
-        ...product,
+        ...product, // Start with this product as the representative
         displayTitle: groupTitle,
         variantsList: [product],
+        hasMatchingVariant: isPriceMatch,
+        cheapestMatchingPrice: isPriceMatch ? productPrice : Infinity,
       });
     } else {
       const group = groupedProductsMap.get(groupTitle);
       group.variantsList.push(product);
       
-      // Prefer cheapest variant as representative
-      const currentPrice = product.discountedPrice < product.price ? product.discountedPrice : product.price;
-      const groupMinPrice = group.discountedPrice < group.price ? group.discountedPrice : group.price;
-      
-      if (currentPrice < groupMinPrice) {
-        // Swap representative to the cheapest, but keep the accumulated variantsList
-        groupedProductsMap.set(groupTitle, {
-          ...product,
-          displayTitle: groupTitle,
-          variantsList: group.variantsList,
-        });
+      if (isPriceMatch) {
+        group.hasMatchingVariant = true;
+        
+        // If this matching product is cheaper than the current cheapest matching product
+        if (productPrice < group.cheapestMatchingPrice) {
+          groupedProductsMap.set(groupTitle, {
+            ...product,
+            displayTitle: groupTitle,
+            variantsList: group.variantsList,
+            hasMatchingVariant: true,
+            cheapestMatchingPrice: productPrice,
+          });
+        }
       }
     }
   });
 
-  finalProducts = Array.from(groupedProductsMap.values());
+  // Only keep groups that have at least one variant within the selected price range
+  finalProducts = Array.from(groupedProductsMap.values()).filter(group => group.hasMatchingVariant);
   const hasMore = finalProducts.length > page * 12;
   const paginatedProducts = finalProducts.slice((page - 1) * 12, page * 12);
+
+  if (categoryMinPrice === Infinity) categoryMinPrice = 0;
 
   return (
     <>
       <PaginationSync hasMore={hasMore} />
+      <PriceRangeUpdater minPrice={categoryMinPrice} maxPrice={categoryMaxPrice} />
       <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
         {paginatedProducts.length > 0 ? (
           paginatedProducts.map((product: any) => (

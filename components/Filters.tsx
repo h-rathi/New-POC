@@ -13,6 +13,7 @@ import { usePaginationStore } from "@/app/_zustand/paginationStore";
 import { categoryMenuList } from "@/lib/utils";
 import posthog from "posthog-js";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+import { usePriceRangeStore } from "@/app/_zustand/priceRangeStore";
 
 interface InputCategory {
   inStock: { text: string; isChecked: boolean };
@@ -38,6 +39,8 @@ const Filters = () => {
 
   const { page } = usePaginationStore();
   const { sortBy } = useSortStore();
+  
+  const { categoryMinPrice, categoryMaxPrice } = usePriceRangeStore();
 
   const captureFilterChanged = (payload: Record<string, unknown>) => {
     const filterPayload = withIsLoggedIn(payload, isLoggedIn);
@@ -74,12 +77,28 @@ const Filters = () => {
       outOfStock: { text: "outofstock", isChecked: getBool("outOfStock", false) },
       discounted: { text: "discounted", isChecked: getBool("discounted", false) },
       nonDiscounted: { text: "nonDiscounted", isChecked: getBool("nonDiscounted", false) },
-      priceFilter: { text: "price", value: getNum("price", 10000) },
+      // default priceFilter value to large number so it doesn't artificially limit early renders
+      priceFilter: { text: "price", value: getNum("price", 1000000) },
       ratingFilter: { text: "rating", value: getNum("rating", 0) },
     };
   };
 
   const [inputCategory, setInputCategory] = useState<InputCategory>(initialFilters);
+
+  // When categoryMaxPrice changes (via server component updates),
+  // if our currently selected price is higher than the new max, snap it down.
+  // Also, if the initial searchParam wasn't explicitly set by the user, we cap it at the actual max.
+  useEffect(() => {
+    if (categoryMaxPrice > 0) {
+      const paddedMax = Math.ceil(categoryMaxPrice * 1.1);
+      if (inputCategory.priceFilter.value > paddedMax) {
+        setInputCategory((prev) => ({
+          ...prev,
+          priceFilter: { text: "price", value: paddedMax },
+        }));
+      }
+    }
+  }, [categoryMaxPrice]);
 
   // Category dropdown state — read initial value from URL so bookmarks / back
   // navigation work correctly.
@@ -128,14 +147,20 @@ const Filters = () => {
 
       {/* 1 — Price */}
       <div className="flex flex-col gap-y-1">
-        <h3 className="text-xl mb-2">Price</h3>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-xl">Price</h3>
+          <span className="text-sm font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            Up to ${inputCategory.priceFilter.value === 1000000 ? (categoryMaxPrice > 0 ? Math.ceil(categoryMaxPrice * 1.1) : 10000) : inputCategory.priceFilter.value}
+          </span>
+        </div>
+        
         <input
           type="range"
-          min={0}
-          max={10000}
-          step={20}
-          value={inputCategory.priceFilter.value}
-          className="range"
+          min={categoryMinPrice}
+          max={categoryMaxPrice > 0 ? Math.ceil(categoryMaxPrice * 1.1) : 10000}
+          step={Math.max(1, Math.floor(((categoryMaxPrice * 1.1) - categoryMinPrice) / 100))}
+          value={inputCategory.priceFilter.value > (categoryMaxPrice * 1.1) ? Math.ceil(categoryMaxPrice * 1.1) : inputCategory.priceFilter.value}
+          className="range range-primary"
           onChange={(e) => {
             const value = Number(e.target.value);
 
@@ -151,7 +176,9 @@ const Filters = () => {
             });
           }}
         />
-        <span>{`Max price: $${inputCategory.priceFilter.value}`}</span>
+        <div className="w-full flex justify-end text-xs px-2 mt-1 text-gray-500">
+          <span>${categoryMaxPrice > 0 ? Math.ceil(categoryMaxPrice * 1.1) : 10000}</span>
+        </div>
       </div>
 
       <div className="divider"></div>
