@@ -13,7 +13,7 @@ import { sanitize } from "@/lib/sanitize";
 
 // improve readabillity of category text, for example category text "smart-watches" will be "smart watches"
 const improveCategoryText = (text: string): string => {
-  if (text.toLowerCase() === "mouses") {
+  if (text.toLowerCase() === "mouses" || text.toLowerCase() === "mouse") {
     return "Mouse";
   }
 

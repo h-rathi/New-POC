@@ -12,6 +12,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { sanitize } from "@/lib/sanitize";
+import { formatProductTitle, isLightColor } from "@/lib/utils";
 import { PriceRenderer } from "@/components";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 
@@ -148,11 +149,23 @@ const ProductItem = ({
             : "text-xl text-white font-normal mt-2 uppercase text-center"
         }
       >
-        {sanitize((product as any).displayTitle || product.title)}
+        {sanitize(formatProductTitle((product as any).displayTitle || product.title))}
       </Link>
 
       {/* Variant Preview */}
       {(product as any).variantsList && (product as any).variantsList.length > 1 && (() => {
+        let selectedColorStr: string | null = null;
+        if (selectedVariant.variant_attributes) {
+          let attrs = selectedVariant.variant_attributes;
+          if (typeof attrs === 'string') {
+            try { attrs = JSON.parse(attrs); } catch (e) {}
+          }
+          if (typeof attrs === 'object' && attrs !== null) {
+            const colorKey = Object.keys(attrs).find(k => k.toLowerCase() === 'color');
+            if (colorKey) selectedColorStr = attrs[colorKey];
+          }
+        }
+
         const uniqueColorVariantsMap = new Map();
         (product as any).variantsList.forEach((v: any) => {
           let colorStr = null;
@@ -187,7 +200,11 @@ const ProductItem = ({
             <div className="flex gap-1.5 mt-0.5">
               {colorVariants.map((v: any, idx: number) => {
                 const colorStr = v._colorStr;
-                const isSelected = selectedVariant.id === v.id;
+                const isSelected = (selectedColorStr && colorStr) 
+                  ? selectedColorStr.toLowerCase() === colorStr.toLowerCase() 
+                  : selectedVariant.id === v.id;
+                const isLight = isLightColor(colorStr);
+                
                 return (
                   <button 
                     key={idx} 
@@ -196,7 +213,10 @@ const ProductItem = ({
                       e.preventDefault();
                       handleVariantSwatchClick(v, colorStr);
                     }}
-                    className={`w-4 h-4 rounded-full border shadow-sm transition-all duration-300 ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2 scale-110 border-blue-500' : 'border-gray-300 hover:scale-110'}`} 
+                    className={`w-4 h-4 rounded-full transition-all duration-300 shadow-sm
+                      ${isLight ? 'border border-gray-300' : 'border border-gray-200'}
+                      ${isSelected ? `ring-2 ring-blue-500 ring-offset-2 scale-110 ${isLight ? '' : 'border-blue-500'}` : 'hover:scale-110'}
+                    `} 
                     style={{ backgroundColor: colorStr.toLowerCase().replace(/ /g, '') }} 
                   />
                 );

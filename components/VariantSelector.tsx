@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+import { isLightColor } from "@/lib/utils";
 
 interface Variant {
   id: string;
@@ -192,6 +193,30 @@ const VariantSelector: React.FC<VariantSelectorProps> = ({ product, variants }) 
                       
                       return parentKeys.every(k => vAttrs[k] === currentAttrs[k]);
                     });
+
+                    const isColorAttr = attrKey.toLowerCase() === 'color';
+
+                    if (isColorAttr) {
+                      const isLight = isLightColor(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => handleOptionSelect(attrKey, val)}
+                          disabled={!isStrictlyAvailable && !isSelected}
+                          className={`
+                            w-8 h-8 rounded-full transition-all duration-300 shadow-sm
+                            ${isLight ? 'border border-gray-300' : 'border border-gray-200'}
+                            ${isSelected 
+                              ? `ring-2 ring-blue-500 ring-offset-2 scale-110 ${isLight ? '' : 'border-blue-500'}` 
+                              : isStrictlyAvailable 
+                                ? 'hover:scale-110' 
+                                : 'opacity-30 cursor-not-allowed'}
+                          `}
+                          style={{ backgroundColor: val.toLowerCase().replace(/ /g, '') }}
+                          title={!isStrictlyAvailable ? "This combination is currently unavailable" : val}
+                        />
+                      );
+                    }
 
                     return (
                       <button

@@ -12,36 +12,50 @@ import React from "react";
 import ProductItem from "./ProductItem";
 import Heading from "./Heading";
 import apiClient from "@/lib/api";
+import { formatProductTitle } from "@/lib/utils";
 
 const ProductsSection = async () => {
   let products = [];
   
   try {
-    // Fetch products for homepage - increase limit to show more products
-    // Request multiple pages or use a higher limit parameter if supported
-    // For now, fetch first 3 pages (36 products) to show more products on homepage
-    const pagesToFetch = [1, 2, 3];
-    const allProducts: any[] = [];
+    const data = await apiClient.get(`/api/products?fetchAll=true`);
     
-    for (const page of pagesToFetch) {
-      const data = await apiClient.get(`/api/products?page=${page}`);
+    if (data.ok) {
+      const result = await data.json();
+      const allProducts = Array.isArray(result) ? result : [];
       
-      if (data.ok) {
-        const result = await data.json();
-        if (Array.isArray(result) && result.length > 0) {
-          allProducts.push(...result);
+      const groupedProductsMap = new Map<string, any>();
+      
+      allProducts.forEach((product: any) => {
+        const groupTitle = formatProductTitle(product.title);
+        const productPrice = product.discountedPrice < product.price && product.discountedPrice > 0 
+          ? product.discountedPrice 
+          : product.price;
+
+        if (!groupedProductsMap.has(groupTitle)) {
+          groupedProductsMap.set(groupTitle, {
+            ...product,
+            displayTitle: groupTitle,
+            variantsList: [product],
+            cheapestPrice: productPrice
+          });
         } else {
-          // If no products in this page, stop fetching more pages
-          break;
+          const group = groupedProductsMap.get(groupTitle);
+          group.variantsList.push(product);
+          
+          if (productPrice < group.cheapestPrice) {
+            groupedProductsMap.set(groupTitle, {
+              ...product,
+              displayTitle: groupTitle,
+              variantsList: group.variantsList,
+              cheapestPrice: productPrice
+            });
+          }
         }
-      }
+      });
+
+      products = Array.from(groupedProductsMap.values()).slice(0, 24); // Show up to 24 grouped products on homepage
     }
-    
-    // Remove duplicates (in case of any overlap) and limit to a reasonable number
-    const uniqueProducts = Array.from(
-      new Map(allProducts.map((p) => [p.id, p])).values()
-    );
-    products = uniqueProducts.slice(0, 48); // Show up to 48 products on homepage
   } catch (error) {
     console.error('Error fetching products:', error);
     products = [];

@@ -15,7 +15,7 @@ export const categoryMenuList = [
     id: 3,
     title: "Mouse",
     src: "/mouse icon.png",
-    href: "/shop/mouses"
+    href: "/shop/mouse"
   },
   {
     id: 4,
@@ -257,4 +257,31 @@ export const formatTitle = (text: string): string => {
     .split(/[-\s]+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+};
+
+/**
+ * Safely strips internal variant suffixes (e.g., "Variant 1", "Variant 12") 
+ * from product titles to provide a clean, user-facing display name.
+ */
+export const formatProductTitle = (title: string | null | undefined): string => {
+  if (!title) return "";
+  return title.replace(/\s+Variant\s+\d+$/i, "").trim();
+};
+
+export const isLightColor = (color: string) => {
+  if (!color) return false;
+  const c = color.toLowerCase().replace(/ /g, '');
+  const lightColors = ['white', 'silver', 'cream', 'ivory', 'snow', 'floralwhite', 'aliceblue', 'ghostwhite', 'honeydew', 'mintcream', 'azure', 'lightgray', 'lightgrey', 'whitesmoke', 'seashell', 'beige', 'oldlace', 'linen'];
+  if (lightColors.includes(c)) return true;
+  if (c.startsWith('#')) {
+    const hex = c.replace('#', '');
+    if (hex.length === 3 || hex.length === 6) {
+      const r = parseInt(hex.length === 3 ? hex[0]+hex[0] : hex.slice(0, 2), 16);
+      const g = parseInt(hex.length === 3 ? hex[1]+hex[1] : hex.slice(2, 4), 16);
+      const b = parseInt(hex.length === 3 ? hex[2]+hex[2] : hex.slice(4, 6), 16);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.8;
+    }
+  }
+  return false;
 };

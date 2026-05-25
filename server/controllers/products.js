@@ -1,6 +1,7 @@
 const prisma = require("../utills/db"); // ✅ Use shared connection with SSL
 const { asyncHandler, handleServerError, AppError } = require("../utills/errorHandler");
 const { applyOffersToProducts, getActiveOfferTargetIds } = require("../services/pricingService");
+const fs = require('fs');
 
 // Security: Define whitelists for allowed filter types and operators
 const ALLOWED_FILTER_TYPES = ['price', 'rating', 'category', 'inStock', 'outOfStock', 'hasDiscount'];
@@ -276,9 +277,13 @@ const getAllProducts = asyncHandler(async (request, response) => {
         
         const matchedCategory = allCategories.find(
           (cat) => {
-            const catNameLower = cat.name.toLowerCase();
+            const catNameLower = cat.name.toLowerCase().trim();
             const catNameNoSpaces = catNameLower.replace(/\s+/g, "-");
             const catNameNoHyphens = catNameLower.replace(/-/g, "");
+            
+            if ((categorySlug === "mouses" || categorySlug === "mouse") && (catNameLower === "mouse" || catNameLower === "mice" || catNameLower === "mouses")) {
+              return true;
+            }
             
             return (
               catNameLower === categorySlug ||
@@ -286,10 +291,15 @@ const getAllProducts = asyncHandler(async (request, response) => {
               catNameLower === categoryNameWithoutHyphens ||
               catNameNoSpaces === categorySlug ||
               catNameNoHyphens === categorySlug ||
-              catNameLower.replace(/-/g, "") === categorySlug.replace(/-/g, "")
+              catNameLower.replace(/-/g, "") === categorySlug.replace(/-/g, "") ||
+              catNameLower + "s" === categorySlug ||
+              catNameLower + "es" === categorySlug ||
+              catNameNoSpaces + "s" === categorySlug
             );
           }
         );
+        
+        fs.appendFileSync('debug_log.txt', `DEBUG: categorySlug = ${categorySlug}\nDEBUG: allCategories = ${JSON.stringify(allCategories)}\nDEBUG: matchedCategory = ${JSON.stringify(matchedCategory)}\n`);
         
         if (matchedCategory) {
           products = await prisma.product.findMany({
@@ -309,6 +319,7 @@ const getAllProducts = asyncHandler(async (request, response) => {
             orderBy: sortObj,
           });
         } else {
+          fs.appendFileSync('debug_log.txt', "DEBUG: Category not found, returning empty array\n");
           // Category not found, return empty array
           products = [];
         }
@@ -331,6 +342,7 @@ const getAllProducts = asyncHandler(async (request, response) => {
 
     // Apply global pricing formatting
     const formattedProducts = await applyOffersToProducts(products);
+    fs.appendFileSync('debug_log.txt', `DEBUG: returned products count = ${formattedProducts.length}\n`);
 
     return response.json(formattedProducts);
   }

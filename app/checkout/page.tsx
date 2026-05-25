@@ -11,6 +11,7 @@ import apiClient from "@/lib/api";
 import { sanitize } from "@/lib/sanitize";
 import posthog from "posthog-js";
 import { getIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+import { formatProductTitle } from "@/lib/utils";
 
 const CheckoutPage = () => {
   const { data: session } = useSession();
@@ -626,13 +627,13 @@ try {
                       product?.image?.startsWith("http://") ||
                       product?.image?.startsWith("https://")
                     }
-                    alt={sanitize(product?.title) || "Product image"}
+                    alt={sanitize(formatProductTitle(product?.title)) || "Product image"}
                     width={80}
                     height={80}
                     className="h-20 w-20 flex-none rounded-md object-cover object-center"
                   />
                   <div className="flex-auto space-y-1">
-                    <h3>{product?.title}</h3>
+                    <h3>{formatProductTitle(product?.title)}</h3>
                     {product?.hasDiscount && product?.offerName && (
                       <span className="text-blue-600 font-semibold text-xs block mt-0.5 italic">
                         {product.offerName}

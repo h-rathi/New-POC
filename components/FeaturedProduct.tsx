@@ -3,6 +3,7 @@
 import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { sanitize } from "@/lib/sanitize";
+import { formatProductTitle } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -91,7 +92,7 @@ const FeaturedProduct: React.FC<FeaturedProductProps> = ({ product }) => {
               Pro Performance
             </span>
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
-              {sanitize(product.title) || "Xiaomi Pad 6"}
+              {sanitize(formatProductTitle(product.title)) || "Xiaomi Pad 6"}
             </h1>
             <h2 className="text-2xl md:text-3xl font-light text-slate-600">
               Unleash your potential.
@@ -110,7 +111,7 @@ const FeaturedProduct: React.FC<FeaturedProductProps> = ({ product }) => {
                   src={imageUrl}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  alt={sanitize(product.title) || "Featured tablet"}
+                  alt={sanitize(formatProductTitle(product.title)) || "Featured tablet"}
                   className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)] z-20"
                   unoptimized={imageUrl.startsWith("http://")}
                 />

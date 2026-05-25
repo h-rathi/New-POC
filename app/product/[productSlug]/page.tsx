@@ -13,8 +13,8 @@ import { notFound } from "next/navigation";
 import React from "react";
 import { FaSquareFacebook } from "react-icons/fa6";
 import { FaSquareXTwitter } from "react-icons/fa6";
-import { FaSquarePinterest } from "react-icons/fa6";
 import { sanitize } from "@/lib/sanitize";
+import { formatProductTitle } from "@/lib/utils";
 
 
 interface ImageItem {
@@ -88,8 +88,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
 
           {/* Product Info Column */}
           <div className="flex flex-col gap-y-4 text-black max-[500px]:text-center lg:col-span-5 sticky top-24 self-start">
-        
-            <h1 className="text-3xl">{sanitize(product?.title)}</h1>
+            <h1 className="text-3xl">{sanitize(formatProductTitle(product?.title))}</h1>
             <PriceRenderer 
               price={product?.price} 
               discountedPrice={product?.discountedPrice} 
