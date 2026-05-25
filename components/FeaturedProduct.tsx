@@ -3,7 +3,10 @@
 import Image from "next/image";
 import React, { useEffect, useState, useRef } from "react";
 import { sanitize } from "@/lib/sanitize";
-import { formatProductTitle } from "@/lib/utils";
+import { formatProductTitle, isLightColor } from "@/lib/utils";
+import posthog from "posthog-js";
+import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+import Link from "next/link";
 
 interface Product {
   id: string;
@@ -64,10 +67,99 @@ const FadeInSection: React.FC<{ children: React.ReactNode; delay?: number; class
 };
 
 const FeaturedProduct: React.FC<FeaturedProductProps> = ({ product }) => {
-  const imageUrl = product.mainImage
-    ? product.mainImage.startsWith("http://") || product.mainImage.startsWith("https://")
-      ? product.mainImage
-      : `/${product.mainImage}`
+  const isLoggedIn = useIsLoggedInValue();
+  const [selectedVariant, setSelectedVariant] = useState<any>(product);
+  const domRef = useRef<HTMLElement>(null);
+  const hasTrackedImpression = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedImpression.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedImpression.current) {
+            hasTrackedImpression.current = true;
+            const impressionPayload = withIsLoggedIn({
+              product_slug: selectedVariant.slug || "unknown",
+              product_title: selectedVariant.title || "unknown",
+              category: selectedVariant.category?.name || "unknown",
+              price: selectedVariant.price || 0,
+              component: "FeaturedProduct",
+            }, isLoggedIn);
+            
+            posthog.capture("featured_product_impression", impressionPayload);
+            if (typeof window !== "undefined") {
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({ event: "featured_product_impression", ...impressionPayload });
+            }
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (domRef.current) observer.observe(domRef.current);
+    return () => observer.disconnect();
+  }, [selectedVariant, isLoggedIn]);
+
+  const handleProductClick = (click_source: string) => {
+    const clickPayload = withIsLoggedIn({
+      product_slug: selectedVariant.slug || "unknown",
+      product_title: selectedVariant.title || "unknown",
+      destination_url: `/product/${selectedVariant.slug}`,
+      click_source,
+      price: selectedVariant.price || 0,
+      component: "FeaturedProduct",
+    }, isLoggedIn);
+    
+    posthog.capture("featured_product_clicked", clickPayload);
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "featured_product_clicked", ...clickPayload });
+    }
+  };
+
+  const handleVariantSwatchClick = (targetVariant: any, targetColor: string) => {
+    if (selectedVariant.id === targetVariant.id) return;
+    let previousColor = "";
+    if (selectedVariant._colorStr) {
+      previousColor = selectedVariant._colorStr;
+    } else if (selectedVariant.variant_attributes) {
+      let attrs = selectedVariant.variant_attributes;
+      if (typeof attrs === 'string') {
+        try { attrs = JSON.parse(attrs); } catch (e) {}
+      }
+      if (typeof attrs === 'object' && attrs !== null) {
+        const colorKey = Object.keys(attrs).find(k => k.toLowerCase() === 'color');
+        if (colorKey) previousColor = attrs[colorKey];
+      }
+    }
+
+    const variantPayload = withIsLoggedIn({
+      current_displayed_product_slug: selectedVariant.slug || "unknown",
+      target_variant_slug: targetVariant.slug || "unknown",
+      product_group_title: (product as any).displayTitle || product.title.replace(/\s+Variant\s+\d+$/i, "").trim(),
+      selected_color: targetColor,
+      previous_selected_color: previousColor,
+      product_title: targetVariant.title || "unknown",
+      price: targetVariant.price || 0,
+      category: targetVariant.category?.name || "unknown",
+      source: "featured_variant_swatch",
+      component: "FeaturedProduct",
+    }, isLoggedIn);
+
+    posthog.capture("featured_variant_selected", variantPayload);
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "featured_variant_selected", ...variantPayload });
+    }
+    setSelectedVariant(targetVariant);
+  };
+
+  const imageUrl = selectedVariant.mainImage
+    ? selectedVariant.mainImage.startsWith("http://") || selectedVariant.mainImage.startsWith("https://")
+      ? selectedVariant.mainImage
+      : `/${selectedVariant.mainImage}`
     : "/product_placeholder.jpg";
 
   // Data mapping from backend (falling back to realistic defaults if the data isn't seeded)
@@ -80,7 +172,7 @@ const FeaturedProduct: React.FC<FeaturedProductProps> = ({ product }) => {
   return (
     <div className="w-full bg-slate-50 text-slate-900 font-sans overflow-hidden">
       {/* 1. HERO SECTION */}
-      <section className="relative w-full min-h-[90vh] flex items-center justify-center pt-24 pb-16 overflow-hidden bg-white">
+      <section ref={domRef} className="relative w-full min-h-[90vh] flex items-center justify-center pt-24 pb-16 overflow-hidden bg-white">
         {/* Abstract Soft Background Gradients */}
         <div className="absolute top-0 right-0 w-3/4 h-full bg-gradient-to-bl from-blue-50/80 via-white to-white opacity-80 z-0"></div>
         <div className="absolute top-10 right-10 w-[500px] h-[500px] bg-indigo-100/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
@@ -100,22 +192,95 @@ const FeaturedProduct: React.FC<FeaturedProductProps> = ({ product }) => {
             <p className="text-lg md:text-xl text-slate-500 font-light leading-relaxed max-w-lg">
               {product.description || "Experience the next evolution in premium tablets. Unbeatable power meets a breathtaking display, crafted to expand what you can do every day."}
             </p>
+
+            {/* Variant Selector (if available) */}
+            {(product as any).variantsList && (product as any).variantsList.length > 1 && (() => {
+              let selectedColorStr: string | null = null;
+              if (selectedVariant.variant_attributes) {
+                let attrs = selectedVariant.variant_attributes;
+                if (typeof attrs === 'string') {
+                  try { attrs = JSON.parse(attrs); } catch (e) {}
+                }
+                if (typeof attrs === 'object' && attrs !== null) {
+                  const colorKey = Object.keys(attrs).find(k => k.toLowerCase() === 'color');
+                  if (colorKey) selectedColorStr = attrs[colorKey];
+                }
+              }
+
+              const uniqueColorVariantsMap = new Map();
+              (product as any).variantsList.forEach((v: any) => {
+                let colorStr = null;
+                if (v.variant_attributes) {
+                  let attrs = v.variant_attributes;
+                  if (typeof attrs === 'string') {
+                    try { attrs = JSON.parse(attrs); } catch (e) {}
+                  }
+                  if (typeof attrs === 'object' && attrs !== null) {
+                    const colorKey = Object.keys(attrs).find(k => k.toLowerCase() === 'color');
+                    if (colorKey) colorStr = attrs[colorKey];
+                  }
+                }
+                if (colorStr && !uniqueColorVariantsMap.has(colorStr.toLowerCase())) {
+                  uniqueColorVariantsMap.set(colorStr.toLowerCase(), { ...v, _colorStr: colorStr });
+                }
+              });
+              const colorVariants = Array.from(uniqueColorVariantsMap.values());
+              if (colorVariants.length <= 1) return null;
+
+              return (
+                <div className="flex flex-col items-start mt-4 gap-2">
+                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">Color</span>
+                  <div className="flex gap-2 mt-1">
+                    {colorVariants.map((v: any, idx: number) => {
+                      const colorStr = v._colorStr;
+                      const isSelected = (selectedColorStr && colorStr) 
+                        ? selectedColorStr.toLowerCase() === colorStr.toLowerCase() 
+                        : selectedVariant.id === v.id;
+                      const isLight = isLightColor(colorStr);
+                      return (
+                        <button 
+                          key={idx} 
+                          title={colorStr} 
+                          onClick={() => handleVariantSwatchClick(v, colorStr)}
+                          className={`w-6 h-6 rounded-full transition-all duration-300 shadow-sm
+                            ${isLight ? 'border border-gray-300' : 'border border-gray-200'}
+                            ${isSelected ? `ring-2 ring-blue-500 ring-offset-2 scale-110 ${isLight ? '' : 'border-blue-500'}` : 'hover:scale-110'}
+                          `} 
+                          style={{ backgroundColor: colorStr.toLowerCase().replace(/ /g, '') }} 
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* CTA */}
+            <div className="mt-8">
+              <Link
+                href={`/product/${selectedVariant?.slug}`}
+                onClick={() => handleProductClick("cta")}
+                className="inline-block bg-blue-600 text-white font-semibold px-8 py-3 rounded-full hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+              >
+                View Product
+              </Link>
+            </div>
           </FadeInSection>
 
           {/* RIGHT: Large Image */}
           <FadeInSection delay={200} className="w-full md:w-7/12 flex justify-center items-center">
             <div className="relative w-full max-w-xl aspect-square flex items-center justify-center">
               {/* Product floating effect via Tailwind animation */}
-              <div className="relative w-[85%] h-[85%] animate-[wiggle_6s_ease-in-out_infinite]">
+              <Link href={`/product/${selectedVariant?.slug}`} onClick={() => handleProductClick("image")} className="relative w-[85%] h-[85%] animate-[wiggle_6s_ease-in-out_infinite] block">
                 <Image
                   src={imageUrl}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  alt={sanitize(formatProductTitle(product.title)) || "Featured tablet"}
-                  className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)] z-20"
+                  alt={sanitize(formatProductTitle(selectedVariant.title)) || "Featured product"}
+                  className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)] z-20 cursor-pointer"
                   unoptimized={imageUrl.startsWith("http://")}
                 />
-              </div>
+              </Link>
             </div>
           </FadeInSection>
         </div>

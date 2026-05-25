@@ -52,4 +52,5 @@ export { default as NotificationCard } from "./NotificationCard";
 export { default as BulkUploadHistory } from "./BulkUploadHistory";
 export { default as Label } from "./Label";
 export { default as VariantSelector } from "./VariantSelector";
+export { default as ShopAnalyticsWrapper } from "./ShopAnalyticsWrapper";
 export * from "./PriceRangeUpdater";
