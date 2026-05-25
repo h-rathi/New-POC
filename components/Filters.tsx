@@ -6,7 +6,7 @@
 // *********************
 
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSortStore } from "@/app/_zustand/sortStore";
 import { usePaginationStore } from "@/app/_zustand/paginationStore";
@@ -41,6 +41,7 @@ const Filters = () => {
   const { sortBy } = useSortStore();
   
   const { categoryMinPrice, categoryMaxPrice } = usePriceRangeStore();
+  const priceDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const captureFilterChanged = (payload: Record<string, unknown>) => {
     const filterPayload = withIsLoggedIn(payload, isLoggedIn);
@@ -169,11 +170,16 @@ const Filters = () => {
               priceFilter: { text: "price", value },
             });
 
-            captureFilterChanged({
-              filter_type: "price",
-              value,
-              component: "Filters",
-            });
+            if (priceDebounceTimer.current) {
+              clearTimeout(priceDebounceTimer.current);
+            }
+            priceDebounceTimer.current = setTimeout(() => {
+              captureFilterChanged({
+                filter_type: "price",
+                value,
+                component: "Filters",
+              });
+            }, 500);
           }}
         />
         <div className="w-full flex justify-end text-xs px-2 mt-1 text-gray-500">

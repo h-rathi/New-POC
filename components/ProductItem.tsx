@@ -19,12 +19,55 @@ import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 const ProductItem = ({
   product,
   color,
+  position = 0,
 }: {
   product: Product;
   color: string;
+  position?: number;
 }) => {
   const isLoggedIn = useIsLoggedInValue();
   const [selectedVariant, setSelectedVariant] = useState<any>(product);
+  const domRef = React.useRef<HTMLDivElement>(null);
+  const hasTrackedImpression = React.useRef(false);
+
+  React.useEffect(() => {
+    if (hasTrackedImpression.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedImpression.current) {
+            hasTrackedImpression.current = true;
+            
+            const impressionPayload = withIsLoggedIn({
+              product_id: selectedVariant.id,
+              product_slug: selectedVariant.slug,
+              product_title: selectedVariant.title,
+              price: selectedVariant.price,
+              position,
+              category: (product as any).category?.name || "",
+              component: "Products",
+            }, isLoggedIn);
+
+            posthog.capture("shop_product_impression", impressionPayload);
+
+            if (typeof window !== "undefined") {
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({
+                event: "shop_product_impression",
+                ...impressionPayload,
+              });
+            }
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (domRef.current) observer.observe(domRef.current);
+
+    return () => observer.disconnect();
+  }, [selectedVariant, position, isLoggedIn, product]);
 
   const getPrice = (v: any) => (v.discountedPrice < v.price && v.discountedPrice > 0) ? v.discountedPrice : v.price;
   const minPrice = getPrice(product);
@@ -42,6 +85,7 @@ const ProductItem = ({
       currency: "USD",
       click_source,
       source: "product_grid",
+      position,
       component: "ProductItem",
     }, isLoggedIn);
 
@@ -102,7 +146,7 @@ const ProductItem = ({
     };
   
     return (
-      <div className="flex flex-col items-center gap-y-2">
+      <div ref={domRef} className="flex flex-col items-center gap-y-2">
       {/* Image with Top Left Discount Pill */}
       <Link
         href={selectedVariant?.slug === "Xiaomi Pad 6 Variant 4" || selectedVariant?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${selectedVariant.slug}` : `/product/${selectedVariant.slug}`}
