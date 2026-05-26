@@ -135,7 +135,11 @@ const ProductItem = ({
         source: pageType === "offers" ? "offer_variant_swatch" : `${pageType}_variant_swatch`
       }, isLoggedIn);
   
-      const eventName = pageType === "offers" ? "offer_variant_selected" : `${pageType}_variant_selected`;
+      let eventName = `${pageType}_variant_selected`;
+      if (pageType === "offers") eventName = "offer_variant_selected";
+      else if (pageType === "shop") eventName = "shop_page_variant_selected";
+      else if (pageType === "featured") eventName = "featured_product_variant_selected";
+      else if (pageType === "search") eventName = "search_variant_selected";
 
       posthog.capture(eventName, variantPayload);
   
