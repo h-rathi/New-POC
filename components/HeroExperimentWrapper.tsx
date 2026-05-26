@@ -16,7 +16,10 @@ const HeroExperimentWrapper = () => {
   useEffect(() => {
     setMounted(true);
     // Check if an offer exists quickly so we don't render a blank test variant
-    fetch("/api/offers/latest")
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    const url = `${base}/api/offers/latest`;
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) setHasOffer(false);
       })
