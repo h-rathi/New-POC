@@ -95,7 +95,23 @@ const getActiveOffersList = async () => {
   return activeOffers;
 };
 
+const getLatestActiveOffer = async () => {
+  const currentDate = new Date();
+  const latestOffer = await prisma.offer.findFirst({
+    where: {
+      isActive: true,
+      startDate: { lte: currentDate },
+      endDate: { gte: currentDate },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+  return latestOffer;
+};
+
 module.exports = {
   getActiveOffers,
   getActiveOffersList,
+  getLatestActiveOffer,
 };

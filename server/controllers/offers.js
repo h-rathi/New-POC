@@ -16,6 +16,15 @@ const getActiveOffersProducts = asyncHandler(async (request, response) => {
   return response.status(200).json(data);
 });
 
+const getLatestActiveOffer = asyncHandler(async (request, response) => {
+  const data = await offersService.getLatestActiveOffer();
+  if (!data) {
+    return response.status(404).json({ message: "No active offers found" });
+  }
+  return response.status(200).json(data);
+});
+
 module.exports = {
   getActiveOffersProducts,
+  getLatestActiveOffer,
 };

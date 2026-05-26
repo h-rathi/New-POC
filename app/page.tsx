@@ -1,9 +1,9 @@
-import { CategoryMenu, ExploreOffersSection, Hero, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
+import { CategoryMenu, ExploreOffersSection, HeroExperimentWrapper, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
 
 export default function Home() {
   return (
     <>
-    <Hero />
+    <HeroExperimentWrapper />
     <ExploreOffersSection />
     <IntroducingSection />
     <CategoryMenu />
