@@ -132,10 +132,10 @@ const ProductItem = ({
         price: targetVariant.price,
         page_type: pageType,
         component: "ProductItem",
-        source: pageType === "offers" ? "offers_variant_swatch" : "plp_variant_swatch"
+        source: pageType === "offers" ? "offer_variant_swatch" : `${pageType}_variant_swatch`
       }, isLoggedIn);
   
-      const eventName = pageType === "offers" ? "offer_variant_selected" : "plp_variant_selected";
+      const eventName = pageType === "offers" ? "offer_variant_selected" : `${pageType}_variant_selected`;
 
       posthog.capture(eventName, variantPayload);
   
