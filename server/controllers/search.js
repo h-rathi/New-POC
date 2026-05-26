@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { applyOffersToProducts } = require('../services/pricingService');
 
 async function searchProducts(request, response) {
     try {
@@ -21,11 +22,21 @@ async function searchProducts(request, response) {
                             contains: query
                         }
                     }
-                ]
+                ],
+            },
+            include: {
+                category: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
 
-        return response.json(products);
+        // Ensure active offers are rendered correctly for products returned in search results.
+        const formattedProducts = await applyOffersToProducts(products);
+
+        return response.json(formattedProducts);
     } catch (error) {
         console.error("Error searching products:", error);
         return response.status(500).json({ error: "Error searching products" });

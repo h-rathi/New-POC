@@ -139,7 +139,7 @@ const ProductItem = ({
       if (pageType === "offers") eventName = "offer_variant_selected";
       else if (pageType === "shop") eventName = "shop_page_variant_selected";
       else if (pageType === "featured") eventName = "featured_product_variant_selected";
-      else if (pageType === "search") eventName = "search_variant_selected";
+      else if (pageType === "search") eventName = "search_product_variant_selected";
 
       posthog.capture(eventName, variantPayload);
   
