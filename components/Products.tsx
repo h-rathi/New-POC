@@ -146,7 +146,7 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
       <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
         {paginatedProducts.length > 0 ? (
           paginatedProducts.map((product: any, index: number) => (
-            <ProductItem key={product.id} product={product} color="black" position={index + 1} />
+            <ProductItem key={product.id} product={product} color="black" position={index + 1} pageType="shop" />
           ))
         ) : (
           <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
