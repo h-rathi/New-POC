@@ -8,12 +8,14 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { sanitize } from "@/lib/sanitize";
 import { formatProductTitle, isLightColor } from "@/lib/utils";
 import { PriceRenderer } from "@/components";
+import AddToCartSingleProductBtn from "./AddToCartSingleProductBtn";
+import BuyNowSingleProductBtn from "./BuyNowSingleProductBtn";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 
 const ProductItem = ({
@@ -29,6 +31,7 @@ const ProductItem = ({
 }) => {
   const isLoggedIn = useIsLoggedInValue();
   const [selectedVariant, setSelectedVariant] = useState<any>(product);
+  const [isProductCardButtonTestVariant, setIsProductCardButtonTestVariant] = useState(false);
   const domRef = React.useRef<HTMLDivElement>(null);
   const hasTrackedImpression = React.useRef(false);
 
@@ -70,6 +73,13 @@ const ProductItem = ({
 
     return () => observer.disconnect();
   }, [selectedVariant, position, isLoggedIn, product]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const variant = posthog.getFeatureFlag("product-card-button");
+    setIsProductCardButtonTestVariant(variant === "test");
+  }, []);
 
   const getPrice = (v: any) => (v.discountedPrice < v.price && v.discountedPrice > 0) ? v.discountedPrice : v.price;
   const minPrice = getPrice(product);
@@ -305,13 +315,20 @@ const ProductItem = ({
       )}
 
       {/* CTA */}
-      <Link
-        href={selectedVariant?.slug === "Xiaomi Pad 6 Variant 4" || selectedVariant?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${selectedVariant.slug}` : `/product/${selectedVariant.slug}`}
-        onClick={() => handleProductClick("cta")}
-        className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
-      >
-        <p>View product</p>
-      </Link>
+      {isProductCardButtonTestVariant ? (
+        <Link
+          href={selectedVariant?.slug === "Xiaomi Pad 6 Variant 4" || selectedVariant?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${selectedVariant.slug}` : `/product/${selectedVariant.slug}`}
+          onClick={() => handleProductClick("cta")}
+          className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
+        >
+          <p>View product</p>
+        </Link>
+      ) : (
+        <div className="flex flex-col gap-2 w-full">
+          <AddToCartSingleProductBtn product={selectedVariant} quantityCount={1} />
+          <BuyNowSingleProductBtn product={selectedVariant} quantityCount={1} />
+        </div>
+      )}
     </div>
   );
 };
