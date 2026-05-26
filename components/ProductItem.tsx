@@ -20,10 +20,12 @@ const ProductItem = ({
   product,
   color,
   position = 0,
+  pageType = "shop",
 }: {
   product: Product;
   color: string;
   position?: number;
+  pageType?: string;
 }) => {
   const isLoggedIn = useIsLoggedInValue();
   const [selectedVariant, setSelectedVariant] = useState<any>(product);
@@ -119,7 +121,7 @@ const ProductItem = ({
         }
       }
   
-      const plpVariantPayload = withIsLoggedIn({
+      const variantPayload = withIsLoggedIn({
         current_displayed_product_slug: selectedVariant.slug,
         target_variant_slug: targetVariant.slug,
         product_group_title: (product as any).displayTitle || product.title.replace(/\s+Variant\s+\d+$/i, "").trim(),
@@ -128,17 +130,20 @@ const ProductItem = ({
         previous_selected_color: previousColor,
         product_title: targetVariant.title,
         price: targetVariant.price,
+        page_type: pageType,
         component: "ProductItem",
-        source: "plp_variant_swatch"
+        source: pageType === "offers" ? "offers_variant_swatch" : "plp_variant_swatch"
       }, isLoggedIn);
   
-      posthog.capture("plp_variant_selected", plpVariantPayload);
+      const eventName = pageType === "offers" ? "offer_variant_selected" : "plp_variant_selected";
+
+      posthog.capture(eventName, variantPayload);
   
       if (typeof window !== "undefined") {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({
-          event: "plp_variant_selected",
-          ...plpVariantPayload,
+          event: eventName,
+          ...variantPayload,
         });
       }
   

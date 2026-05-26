@@ -1,6 +1,7 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
+import { formatProductTitle } from "@/lib/utils";
 
 const OfferedProducts = async ({ offerId }: { offerId?: string }) => {
   let products = [];
@@ -56,7 +57,25 @@ const OfferedProducts = async ({ offerId }: { offerId?: string }) => {
     const fullProductsData = await Promise.all(productPromises);
     
     // Filter out any products that failed to load
-    products = fullProductsData.filter(Boolean);
+    const validProducts = fullProductsData.filter(Boolean);
+
+    // Group products by normalized title
+    const groupedProductsMap = new Map<string, any>();
+    validProducts.forEach((product: any) => {
+      const groupTitle = formatProductTitle(product.title);
+      if (!groupedProductsMap.has(groupTitle)) {
+        groupedProductsMap.set(groupTitle, {
+          ...product,
+          displayTitle: groupTitle,
+          variantsList: [product],
+        });
+      } else {
+        const group = groupedProductsMap.get(groupTitle);
+        group.variantsList.push(product);
+      }
+    });
+
+    products = Array.from(groupedProductsMap.values());
 
   } catch (error) {
     console.error('Error in OfferedProducts component:', error);
@@ -68,7 +87,7 @@ const OfferedProducts = async ({ offerId }: { offerId?: string }) => {
       <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
         {products.length > 0 ? (
           products.map((product: any) => (
-            <ProductItem key={product.id} product={product} color="black" />
+            <ProductItem key={product.id} product={product} color="black" pageType="offers" />
           ))
         ) : (
           <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
