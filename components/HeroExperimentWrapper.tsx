@@ -1,46 +1,49 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useFeatureFlagVariantKey } from "posthog-js/react";
+import posthog from "posthog-js";
 import Hero from "./Hero";
 import OfferBanner from "./OfferBanner";
 
 const HeroExperimentWrapper = () => {
   const [mounted, setMounted] = useState(false);
   const [hasOffer, setHasOffer] = useState(true);
-
-  // The variant from PostHog ('control' or 'test')
-  // We use the 'homepage-banner' key.
-  const variant = useFeatureFlagVariantKey("homepage-banner");
+  const [variant, setVariant] = useState<string | boolean | undefined>(undefined);
 
   useEffect(() => {
-    setMounted(true);
-    // Check if an offer exists quickly so we don't render a blank test variant
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-    const url = `${base}/api/offers/latest`;
-
-    fetch(url)
+    // Quick check for active offers
+    fetch("/api/offers/latest")
       .then((res) => {
         if (!res.ok) setHasOffer(false);
       })
       .catch(() => setHasOffer(false));
+
+    // Listen for feature flags
+    posthog.onFeatureFlags(() => {
+      setVariant(posthog.getFeatureFlag('homepage-banner'));
+      setMounted(true);
+    });
+
+    // Fallback if flags take too long or fail
+    const timeout = setTimeout(() => setMounted(true), 1500);
+    return () => clearTimeout(timeout);
   }, []);
 
-  // Prevent hydration mismatch by returning a placeholder or nothing until mounted
-  if (!mounted) return <div className="h-[700px] w-full bg-blue-500 animate-pulse" />;
+  if (!mounted) {
+    return <div className="h-[700px] w-full bg-blue-500 animate-pulse" />;
+  }
 
-  // If no offer exists, fallback to Hero regardless of experiment
   if (!hasOffer) {
     return <Hero />;
   }
 
-  // A/B test routing
-  if (variant === "test") {
+  if (variant === 'test') {
     return <OfferBanner />;
+  } else {
+    // It's a good idea to let control variant always be the default behaviour,
+    // so if something goes wrong with flag evaluation, you don't break your app.
+    return <Hero />;
   }
-
-  // Default to control
-  return <Hero />;
 };
 
 export default HeroExperimentWrapper;
