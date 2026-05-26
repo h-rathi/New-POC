@@ -85,65 +85,61 @@ const OfferBanner = () => {
     : `$${offer.discountValue} OFF`;
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-      {/* Background Ornaments */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] bg-blue-400/20 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[150%] bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+    <div className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white shadow-lg overflow-hidden relative">
       <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
-
-      <div className="relative z-10 max-w-screen-xl mx-auto px-6 text-center flex flex-col items-center">
+      <div className="max-w-screen-2xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between relative z-10 gap-4">
         
-        {/* Badge */}
-        <div className="inline-block px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-sm font-semibold tracking-wider uppercase mb-8 shadow-sm border border-white/30 hover:bg-white/30 transition-colors">
-          Limited Time Offer
+        {/* Left: Badge & Text */}
+        <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-white/30 shadow-sm backdrop-blur-sm">
+            Limited Time Offer
+          </span>
+          <div>
+            <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">
+              {offer.name} <span className="text-blue-200">— Save {discountText}</span>
+            </h2>
+            <p className="text-blue-100 text-sm hidden md:block mt-0.5 font-medium">
+              {offer.description || "Premium products at unbeatable prices."}
+            </p>
+          </div>
         </div>
 
-        {/* Headline */}
-        <h1 className="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-6 drop-shadow-md">
-          {offer.name} <br/>
-          <span className="text-blue-200">Save {discountText}</span>
-        </h1>
-
-        {/* Description */}
-        <p className="text-xl md:text-2xl text-blue-100 font-light max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-sm">
-          {offer.description || "Upgrade your world with our premium electronics. Experience the future today with unbeatable savings."}
-        </p>
-
-        {/* Countdown */}
-        {timeLeft && (
-          <div className="flex items-center justify-center gap-4 mb-12">
-            {[
-              { label: 'Days', value: timeLeft.days },
-              { label: 'Hours', value: timeLeft.hours },
-              { label: 'Minutes', value: timeLeft.minutes },
-              { label: 'Seconds', value: timeLeft.seconds },
-            ].map((unit, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-2xl md:text-3xl font-bold shadow-lg">
-                  {unit.value.toString().padStart(2, '0')}
+        {/* Right: Countdown & CTAs */}
+        <div className="flex items-center gap-6">
+          {timeLeft && (
+            <div className="hidden lg:flex items-center gap-3">
+              {[
+                { label: 'D', value: timeLeft.days },
+                { label: 'H', value: timeLeft.hours },
+                { label: 'M', value: timeLeft.minutes },
+                { label: 'S', value: timeLeft.seconds },
+              ].map((unit, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  <div className="bg-black/20 rounded-md w-10 h-10 flex items-center justify-center font-bold text-lg shadow-inner border border-white/10">
+                    {unit.value.toString().padStart(2, '0')}
+                  </div>
+                  <span className="text-[9px] uppercase tracking-wider mt-1 text-blue-200">{unit.label}</span>
                 </div>
-                <span className="text-blue-100 text-xs md:text-sm uppercase tracking-widest mt-2 font-medium">{unit.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-          <Link
-            href="/offers"
-            onClick={() => handleCtaClick("shop_now")}
-            className="bg-white text-blue-600 font-bold px-10 py-4 rounded-full text-lg shadow-xl hover:bg-gray-50 hover:scale-105 hover:shadow-2xl transition-all duration-300"
-          >
-            Shop Now
-          </Link>
-          <Link
-            href="/offers"
-            onClick={() => handleCtaClick("view_details")}
-            className="bg-blue-700/50 backdrop-blur-sm border border-blue-400 text-white font-bold px-10 py-4 rounded-full text-lg shadow-md hover:bg-blue-600/60 hover:scale-105 transition-all duration-300"
-          >
-            View Details
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/offers"
+              onClick={() => handleCtaClick("view_details")}
+              className="px-5 py-2 text-sm font-semibold rounded-full border border-blue-300 hover:bg-blue-600/50 transition-colors"
+            >
+              Details
+            </Link>
+            <Link
+              href="/offers"
+              onClick={() => handleCtaClick("shop_now")}
+              className="px-5 py-2 text-sm font-bold rounded-full bg-white text-blue-700 hover:bg-gray-100 shadow-md hover:scale-105 transition-all"
+            >
+              Shop Now
+            </Link>
+          </div>
         </div>
         
       </div>
