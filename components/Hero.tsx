@@ -12,6 +12,8 @@ import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import posthog from "posthog-js";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+import { useProductStore } from "@/app/_zustand/store";
+import toast from "react-hot-toast";
 
 const Hero = () => {
   const isLoggedIn = useIsLoggedInValue();
@@ -35,16 +37,17 @@ const Hero = () => {
   }, [isLoggedIn]);
 
   const router = useRouter();
+  const { addToCart, calculateTotals } = useProductStore();
 
-  const handleCtaClick = (cta: "buy_now" | "learn_more") => {
+  const handleBuyNow = () => {
+    // Analytics — Hero intent
     const ctaPayload = withIsLoggedIn({
-      cta,
+      cta: "buy_now",
       component: "Hero",
     }, isLoggedIn);
-
     posthog.capture("hero_cta_clicked", ctaPayload);
 
-    // 🔹 GTM dataLayer push (NEW)
+    // GTM dataLayer push (NEW)
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -53,48 +56,120 @@ const Hero = () => {
       });
     }
 
-    router.push("/product/smart-watch-demo");
+    // Reuse existing Cart logic
+    const price = 255;
+    const quantityCount = 1;
+
+    addToCart({
+      id: "bose-qc-45",
+      slug: "bose-quietcomfort-45",
+      title: "Bose QuietComfort 45",
+      price: price,
+      image: "https://product-analysis-poc.s3.amazonaws.com/image-assets-for-website/bose-white.jpg",
+      amount: quantityCount,
+      discountedPrice: price,
+      hasDiscount: false,
+    });
+
+    calculateTotals();
+    toast.success("Product added to the cart");
+
+    // Standard BuyNow analytics funnel
+    const buyNowPayload = withIsLoggedIn({
+      product_id: "bose-qc-45",
+      product_name: "Bose QuietComfort 45",
+      price: price,
+      quantity: quantityCount,
+      value: price * quantityCount,
+      source: "hero_section",
+    }, isLoggedIn);
+    
+    posthog.capture("buy_now_clicked", buyNowPayload);
+    
+    const beginCheckoutPayload = withIsLoggedIn({
+      trigger: "buy_now",
+      cart_value: price * quantityCount,
+    }, isLoggedIn);
+    
+    posthog.capture("begin_checkout", beginCheckoutPayload);
+
+    router.push("/checkout");
+  };
+
+  const handleLearnMore = () => {
+    const ctaPayload = withIsLoggedIn({
+      cta: "learn_more",
+      component: "Hero",
+    }, isLoggedIn);
+    posthog.capture("hero_cta_clicked", ctaPayload);
+
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "hero_cta_clicked",
+        ...ctaPayload,
+      });
+    }
+
+    router.push("/product/bose-qc45-5");
   };
 
   return (
-    <div className="h-[700px] w-full bg-blue-500 max-lg:h-[900px] max-md:h-[750px]">
-      <div className="grid grid-cols-3 items-center justify-items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-10 max-lg:gap-y-10">
+    <div className="h-[700px] w-full bg-blue-500 max-lg:h-auto overflow-hidden relative">
+      <style>{`
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
+
+      <div className="grid grid-cols-12 items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-20 max-lg:gap-y-16">
         
-        <div className="flex flex-col gap-y-5 max-lg:order-last col-span-2">
-          <h1 className="text-6xl text-white font-bold mb-3 max-xl:text-5xl max-md:text-4xl max-sm:text-3xl">
-            THE PRODUCT OF THE FUTURE
+        {/* Left: Text & CTAs */}
+        <div className="flex flex-col gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
+          <h1 className="text-6xl text-white font-extrabold max-xl:text-5xl max-md:text-4xl max-sm:text-3xl tracking-tight leading-[1.1]">
+            BOSE QUIETCOMFORT 45
           </h1>
 
-          <p className="text-white max-sm:text-sm">
-            Our time, reimagined.
-A smartwatch that tracks your health, powers your day,
-and keeps you connected—effortlessly. A powerful companion for your fitness and everyday life.
+          <p className="text-blue-50 text-xl font-light max-w-2xl leading-relaxed max-sm:text-lg">
+            Iconic quiet. Comfort. And sound. 
+            The first noise cancelling headphones are back, with world-class quiet, lightweight materials, and proprietary acoustic technology for deep, clear audio.
           </p>
 
-          <div className="flex gap-x-1 max-lg:flex-col max-lg:gap-y-1">
+          <div className="flex gap-x-4 max-sm:flex-col max-sm:gap-y-4 mt-2">
             <button
-              onClick={() => handleCtaClick("buy_now")}
-              className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100"
+              onClick={handleBuyNow}
+              className="bg-white text-blue-600 font-bold px-12 py-4 rounded-full text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
             >
               BUY NOW
             </button>
 
             <button
-              onClick={() => handleCtaClick("learn_more")}
-              className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100"
+              onClick={handleLearnMore}
+              className="bg-blue-600 border border-blue-400 text-white font-bold px-12 py-4 rounded-full text-lg shadow-lg hover:bg-blue-700 hover:scale-105 transition-all uppercase ease-in"
             >
               LEARN MORE
             </button>
           </div>
         </div>
 
-        <Image
-          src="/watch for banner.png"
-          width={400}
-          height={400}
-          alt="smart watch"
-          className="max-md:w-[300px] max-md:h-[300px] max-sm:h-[250px] max-sm:w-[250px] w-auto h-auto"
-        />
+        {/* Right: Floating Product Image */}
+        <div className="col-span-12 lg:col-span-5 w-full flex justify-center items-center h-full">
+          <div className="relative w-full max-w-[350px]">
+            <Image
+              src="https://product-analysis-poc.s3.amazonaws.com/image-assets-for-website/bose-white.jpg"
+              width={500}
+              height={500}
+              alt="Bose QuietComfort 45"
+              className="w-full h-auto object-contain rounded-3xl animate-float drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500 cursor-pointer bg-white p-4"
+            />
+          </div>
+        </div>
+
       </div>
     </div>
   );
