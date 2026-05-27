@@ -1,32 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import posthog from "posthog-js";
+import { useFeatureFlagVariantKey } from "posthog-js/react";
 import Hero from "./Hero";
 import OfferBanner from "./OfferBanner";
 
 const HeroExperimentWrapper = () => {
   const [mounted, setMounted] = useState(false);
   const [hasOffer, setHasOffer] = useState(true);
-  const [variant, setVariant] = useState<string | boolean | undefined>(undefined);
+  const variant = useFeatureFlagVariantKey("homepage-banner");
 
   useEffect(() => {
-    // Quick check for active offers
-    fetch("/api/offers/latest")
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "";
+    const url = baseUrl ? `${baseUrl}/api/offers/latest` : "/api/offers/latest";
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) setHasOffer(false);
       })
       .catch(() => setHasOffer(false));
 
-    // Listen for feature flags
-    posthog.onFeatureFlags(() => {
-      setVariant(posthog.getFeatureFlag('homepage-banner'));
-      setMounted(true);
-    });
-
-    // Fallback if flags take too long or fail
-    const timeout = setTimeout(() => setMounted(true), 1500);
-    return () => clearTimeout(timeout);
+    setMounted(true);
   }, []);
 
   if (!mounted) {

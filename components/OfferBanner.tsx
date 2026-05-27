@@ -14,7 +14,10 @@ const OfferBanner = () => {
   useEffect(() => {
     const fetchLatestOffer = async () => {
       try {
-        const response = await fetch("/api/offers/latest");
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "";
+        const url = baseUrl ? `${baseUrl}/api/offers/latest` : "/api/offers/latest";
+
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setOffer(data);
