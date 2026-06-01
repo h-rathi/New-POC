@@ -79,8 +79,7 @@ const IntroducingSection = () => {
 
           <button
             onClick={handleClick}
-            className={`block font-bold px-12 py-3 text-xl hover:bg-gray-100 w-96 mt-2 max-md:text-lg max-md:w-72 max-[480px]:w-60 mx-auto ${variant === 'test' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-              }`}
+            className="block font-bold px-12 py-3 text-xl hover:bg-gray-100 w-96 mt-2 max-md:text-lg max-md:w-72 max-[480px]:w-60 mx-auto bg-blue-600 text-white"
           >
             SHOP NOW
           </button>
