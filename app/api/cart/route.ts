@@ -68,6 +68,18 @@ async function findCart({
   return null;
 }
 
+function getCartDistinctId({
+  userId,
+  cartToken,
+  cartId,
+}: {
+  userId?: string | null;
+  cartToken?: string | null;
+  cartId?: string | null;
+}) {
+  return userId ?? cartToken ?? cartId ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/cart – read-only, never mutates
 // ---------------------------------------------------------------------------
@@ -95,10 +107,16 @@ export async function GET(req: NextRequest) {
     // Emit analytics: if an existing cart was loaded (no new id created)
     if (cart) {
       try {
-        await captureEvent("cart_loaded", {
+        const analyticsCartToken = cart.cartToken ?? cartToken ?? null;
+        await captureEvent("cart_loaded", getCartDistinctId({
+          userId,
+          cartToken: analyticsCartToken,
+          cartId: cart.id,
+        }), {
           loaded: true,
           cartId: cart.id,
-          cartToken: cart.cartToken ?? cartToken ?? null,
+          cartToken: analyticsCartToken,
+          userId,
         });
       } catch (err) {
         /* swallow analytics errors */
@@ -169,17 +187,26 @@ export async function POST(req: NextRequest) {
 
     // Analytics: cart created vs reused
     try {
+      const analyticsCartToken = cart.cartToken ?? cartToken ?? null;
+      const distinctId = getCartDistinctId({
+        userId,
+        cartToken: analyticsCartToken,
+        cartId: cart.id,
+      });
+
       if (created) {
-        await captureEvent("cart_created", {
+        await captureEvent("cart_created", distinctId, {
           created: true,
           cartId: cart.id,
-          cartToken: cart.cartToken ?? cartToken ?? null,
+          cartToken: analyticsCartToken,
+          userId,
         });
       } else {
-        await captureEvent("cart_loaded", {
+        await captureEvent("cart_loaded", distinctId, {
           loaded: true,
           cartId: cart.id,
-          cartToken: cart.cartToken ?? cartToken ?? null,
+          cartToken: analyticsCartToken,
+          userId,
         });
       }
     } catch (err) {
