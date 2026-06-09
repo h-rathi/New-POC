@@ -83,14 +83,14 @@ const Hero = () => {
       value: price * quantityCount,
       source: "hero_section",
     }, isLoggedIn);
-    
+
     posthog.capture("buy_now_clicked", buyNowPayload);
-    
+
     const beginCheckoutPayload = withIsLoggedIn({
       trigger: "buy_now",
       cart_value: price * quantityCount,
     }, isLoggedIn);
-    
+
     posthog.capture("begin_checkout", beginCheckoutPayload);
 
     router.push("/checkout");
@@ -115,7 +115,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="h-[700px] w-full bg-blue-500 max-lg:h-auto overflow-hidden relative">
+    <div className="min-h-[500px] w-full bg-blue-500 h-auto overflow-hidden relative">
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
@@ -127,30 +127,30 @@ const Hero = () => {
         }
       `}</style>
 
-      <div className="grid grid-cols-12 items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-20 max-lg:gap-y-16">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 items-center px-4 gap-x-6 gap-y-8 max-w-screen-2xl mx-auto py-10 w-full">
+
         {/* Left: Text & CTAs */}
-        <div className="flex flex-col gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
-          <h1 className="text-6xl text-white font-extrabold max-xl:text-5xl max-md:text-4xl max-sm:text-3xl tracking-tight leading-[1.1]">
+        <div className="flex flex-col gap-y-6 sm:gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl text-white font-extrabold tracking-tight leading-[1.1]">
             BOSE QUIETCOMFORT 45
           </h1>
 
-          <p className="text-blue-50 text-xl font-light max-w-2xl leading-relaxed max-sm:text-lg">
-            Iconic quiet. Comfort. And sound. 
+          <p className="text-blue-50 text-lg sm:text-xl font-light max-w-2xl leading-relaxed">
+            Iconic quiet. Comfort. And sound.
             The first noise cancelling headphones are back, with world-class quiet, lightweight materials, and proprietary acoustic technology for deep, clear audio.
           </p>
 
-          <div className="flex gap-x-4 max-sm:flex-col max-sm:gap-y-4 mt-2">
+          <div className="flex flex-col sm:flex-row gap-4 mt-2 w-full sm:w-auto">
             <button
               onClick={handleBuyNow}
-              className="bg-white text-blue-600 font-bold px-12 py-4 rounded-full text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
+              className="w-full sm:w-auto bg-white text-blue-600 font-bold px-6 py-3 sm:px-12 sm:py-4 rounded-full text-base sm:text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
             >
               BUY NOW
             </button>
 
             <button
               onClick={handleLearnMore}
-              className="bg-blue-600 border border-blue-400 text-white font-bold px-12 py-4 rounded-full text-lg shadow-lg hover:bg-blue-700 hover:scale-105 transition-all uppercase ease-in"
+              className="w-full sm:w-auto bg-blue-600 border border-blue-400 text-white font-bold px-6 py-3 sm:px-12 sm:py-4 rounded-full text-base sm:text-lg shadow-lg hover:bg-blue-700 hover:scale-105 transition-all uppercase ease-in"
             >
               LEARN MORE
             </button>
@@ -159,7 +159,7 @@ const Hero = () => {
 
         {/* Right: Floating Product Image */}
         <div className="col-span-12 lg:col-span-5 w-full flex justify-center items-center h-full">
-          <div className="relative w-full max-w-[350px]">
+          <div className="relative w-full max-w-[220px] sm:max-w-[280px] mx-auto">
             <Image
               src="https://product-analysis-poc.s3.amazonaws.com/image-assets-for-website/bose-white.jpg"
               width={500}

@@ -83,22 +83,22 @@ const OfferBanner = () => {
     return null; // The wrapper handles the fallback to Hero if OfferBanner returns null
   }
 
-  const discountText = offer.discountType === "PERCENTAGE" 
-    ? `${offer.discountValue}% OFF` 
+  const discountText = offer.discountType === "PERCENTAGE"
+    ? `${offer.discountValue}% OFF`
     : `$${offer.discountValue} OFF`;
 
   return (
     <div className="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white shadow-lg overflow-hidden relative">
       <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
-      <div className="max-w-screen-2xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between relative z-10 gap-4">
-        
+      <div className="max-w-screen-2xl mx-auto px-3 py-3 flex flex-col items-center relative z-10 gap-3 w-full">
+
         {/* Left: Badge & Text */}
-        <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-white/30 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left w-full md:w-auto">
+          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border border-white/30 shadow-sm backdrop-blur-sm shrink-0">
             Limited Time Offer
           </span>
-          <div>
-            <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">
+          <div className="w-full max-w-full">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight break-words">
               {offer.name} <span className="text-blue-200">— Save {discountText}</span>
             </h2>
             <p className="text-blue-100 text-sm hidden md:block mt-0.5 font-medium">
@@ -108,7 +108,7 @@ const OfferBanner = () => {
         </div>
 
         {/* Right: Countdown & CTAs */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 shrink-0 w-full md:w-auto justify-center">
           {timeLeft && (
             <div className="hidden lg:flex items-center gap-3">
               {[
@@ -127,7 +127,7 @@ const OfferBanner = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 justify-center w-full">
             <Link
               href="/offers"
               onClick={() => handleCtaClick("view_details")}
@@ -144,7 +144,7 @@ const OfferBanner = () => {
             </Link>
           </div>
         </div>
-        
+
       </div>
     </div>
   );
