@@ -143,7 +143,7 @@ const Products = async ({ categorySlug, searchParams }: ProductsProps) => {
     <>
       <PaginationSync hasMore={hasMore} />
       <PriceRangeUpdater minPrice={categoryMinPrice} maxPrice={categoryMaxPrice} />
-      <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-x-4 gap-y-6 w-full">
         {paginatedProducts.length > 0 ? (
           paginatedProducts.map((product: any, index: number) => (
             <ProductItem key={product.id} product={product} color="black" position={index + 1} pageType="shop" />

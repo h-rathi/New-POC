@@ -64,11 +64,11 @@ const HeaderTop = () => {
   };
 
   return (
-    <div className="h-10 text-white bg-blue-500 max-lg:px-5 max-lg:h-16 max-[573px]:px-0">
-      <div className="flex justify-between h-full max-lg:flex-col max-lg:justify-center max-lg:items-center max-w-screen-2xl mx-auto px-12 max-[573px]:px-0">
+    <div className="w-full bg-blue-500 text-white py-2 px-4 sm:px-6 lg:px-8 min-h-[40px]">
+      <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center h-full max-w-screen-2xl mx-auto gap-2">
         
         {/* Auth links */}
-        <ul className="flex items-center gap-x-5 h-full max-[370px]:text-sm max-[370px]:gap-x-2 font-semibold">
+        <ul className="flex flex-wrap justify-center items-center gap-x-3 sm:gap-x-5 text-xs sm:text-sm font-semibold">
           {!session ? (
             <>
               <li className="flex items-center">
@@ -95,7 +95,7 @@ const HeaderTop = () => {
             </>
           ) : (
             <>
-              <span className="ml-10 text-base">
+              <span className="ml-2 sm:ml-4 text-xs sm:text-sm">
                 {session.user?.email}
               </span>
 

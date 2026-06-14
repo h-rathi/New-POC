@@ -68,7 +68,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
                 unoptimized={product?.mainImage?.startsWith('http://') || product?.mainImage?.startsWith('https://')}
               />
             </div>
-            <div className="flex justify-around mt-5 flex-wrap gap-y-1 max-[500px]:justify-center max-[500px]:gap-x-1">
+            <div className="flex justify-center sm:justify-around mt-5 flex-wrap gap-2 sm:gap-4">
               {images?.map((imageItem: ImageItem, key: number) => (
                 <div
                   key={imageItem.imageID + key}
@@ -87,7 +87,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
           </div>
 
           {/* Product Info Column */}
-          <div className="flex flex-col gap-y-4 text-black max-[500px]:text-center lg:col-span-5 sticky top-24 self-start">
+          <div className="flex flex-col gap-y-4 text-black text-center sm:text-left lg:col-span-5 relative lg:sticky lg:top-32 self-start">
             <h1 className="text-3xl">{sanitize(formatProductTitle(product?.title))}</h1>
             <PriceRenderer 
               price={product?.price} 
