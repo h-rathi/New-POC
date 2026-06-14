@@ -4,14 +4,19 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { sanitize } from "@/lib/sanitize";
+import { mainCategories, mlpCategoryLinks } from "./navigationData";
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+    setExpandedCategory(null);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,15 +29,7 @@ export default function MobileMenu() {
     }
   };
 
-  const mainCategories = [
-    { name: "Shop", href: "/shop" },
-    { name: "Offers", href: "/offers" },
-    { name: "Laptops", href: "/shop?category=laptops" },
-    { name: "Tablets", href: "/shop?category=tablets" },
-    { name: "Earbuds", href: "/shop?category=earbuds" },
-    { name: "Mouse", href: "/shop?category=mouse" },
-    { name: "Printers", href: "/shop?category=printers" },
-  ];
+
 
   return (
     <div className="lg:hidden flex items-center">
@@ -88,17 +85,71 @@ export default function MobileMenu() {
           </div>
 
           <ul className="flex flex-col gap-6">
-            {mainCategories.map((cat, idx) => (
-              <li key={idx}>
-                <Link
-                  href={cat.href}
-                  className="text-lg font-medium text-gray-800 hover:text-blue-600 transition-colors"
-                  onClick={toggleMenu}
-                >
-                  {cat.name}
-                </Link>
-              </li>
-            ))}
+            {mainCategories.map((cat, idx) => {
+              const categorySlug = cat.categorySlug || "";
+              const submenuItems = categorySlug ? mlpCategoryLinks[categorySlug] : null;
+              const hasSubmenu = submenuItems && submenuItems.length > 0;
+              const isExpanded = expandedCategory === cat.name;
+
+              return (
+                <li key={idx} className="flex flex-col">
+                  {hasSubmenu ? (
+                    <>
+                      <button
+                        onClick={() => setExpandedCategory(isExpanded ? null : cat.name)}
+                        className="flex items-center justify-between text-lg font-medium text-gray-800 hover:text-blue-600 transition-colors w-full text-left focus:outline-none"
+                      >
+                        {cat.name}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={`w-5 h-5 transition-transform duration-300 ${isExpanded ? "rotate-180 text-blue-600" : "text-gray-400"}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      <div className={`grid transition-all duration-300 ease-in-out ${isExpanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"}`}>
+                        <div className="overflow-hidden">
+                          <ul className="flex flex-col gap-3 pl-4 border-l-2 border-gray-100 ml-2">
+                            <li>
+                              <Link
+                                href={cat.href}
+                                className="text-[15px] font-medium text-blue-600 block py-1"
+                                onClick={toggleMenu}
+                              >
+                                View All {cat.name}
+                              </Link>
+                            </li>
+                            {submenuItems.map((item, i) => (
+                              <li key={i}>
+                                <Link
+                                  href={`/${categorySlug}/${item.slug}`}
+                                  className="text-[15px] text-gray-600 hover:text-gray-900 block py-1"
+                                  onClick={toggleMenu}
+                                >
+                                  {item.title}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      href={cat.href}
+                      className="text-lg font-medium text-gray-800 hover:text-blue-600 transition-colors"
+                      onClick={toggleMenu}
+                    >
+                      {cat.name}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
             <hr className="my-4 border-gray-100" />
             <li>
               <Link href="/login" onClick={toggleMenu} className="text-gray-600 font-medium hover:text-black">Login / Register</Link>

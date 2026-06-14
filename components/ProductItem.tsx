@@ -170,7 +170,7 @@ const ProductItem = ({
       <Link
         href={selectedVariant?.slug === "Xiaomi Pad 6 Variant 4" || selectedVariant?.slug === "xiaomi-pad-6-variant-4" ? `/product-landing/${selectedVariant.slug}` : `/product/${selectedVariant.slug}`}
         onClick={() => handleProductClick("image")}
-        className="relative flex h-[250px] w-full items-center justify-center overflow-hidden bg-white p-4"
+        className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-white p-4"
       >
         {selectedVariant.discountType && selectedVariant.discountValue !== undefined && (
           <div className="absolute top-2 left-2 z-10 bg-blue-600 text-white px-2.5 py-1 rounded-full shadow-sm pointer-events-none">
@@ -259,8 +259,8 @@ const ProductItem = ({
         if (colorVariants.length <= 1) return null;
 
         return (
-          <div className="flex flex-col items-center mt-1">
-            <div className="flex gap-1.5 mt-0.5">
+          <div className="flex flex-col items-center mt-1 w-full px-2">
+            <div className="flex flex-wrap justify-center gap-1.5 mt-0.5">
               {colorVariants.map((v: any, idx: number) => {
                 const colorStr = v._colorStr;
                 const isSelected = (selectedColorStr && colorStr) 

@@ -115,7 +115,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="h-[700px] w-full bg-blue-500 max-lg:h-auto overflow-hidden relative">
+    <div className="w-full bg-blue-500 min-h-[500px] lg:h-[700px] overflow-hidden relative">
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
@@ -127,20 +127,20 @@ const Hero = () => {
         }
       `}</style>
 
-      <div className="grid grid-cols-12 items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-20 max-lg:gap-y-16">
+      <div className="grid grid-cols-1 lg:grid-cols-12 items-center px-4 sm:px-10 gap-x-10 max-w-screen-2xl mx-auto h-full py-12 lg:py-0 gap-y-12 lg:gap-y-0">
         
         {/* Left: Text & CTAs */}
-        <div className="flex flex-col gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
-          <h1 className="text-6xl text-white font-extrabold max-xl:text-5xl max-md:text-4xl max-sm:text-3xl tracking-tight leading-[1.1]">
+        <div className="flex flex-col gap-y-6 sm:gap-y-8 order-2 lg:order-1 col-span-1 lg:col-span-7 h-full justify-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl text-white font-extrabold tracking-tight leading-[1.1]">
             BOSE QUIETCOMFORT 45
           </h1>
 
-          <p className="text-blue-50 text-xl font-light max-w-2xl leading-relaxed max-sm:text-lg">
+          <p className="text-blue-50 text-lg sm:text-xl font-light max-w-2xl leading-relaxed">
             Iconic quiet. Comfort. And sound. 
             The first noise cancelling headphones are back, with world-class quiet, lightweight materials, and proprietary acoustic technology for deep, clear audio.
           </p>
 
-          <div className="flex gap-x-4 max-sm:flex-col max-sm:gap-y-4 mt-2">
+          <div className="flex flex-col sm:flex-row gap-y-4 sm:gap-y-0 sm:gap-x-4 mt-2">
             <button
               onClick={handleBuyNow}
               className="bg-white text-blue-600 font-bold px-12 py-4 rounded-full text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
@@ -158,7 +158,7 @@ const Hero = () => {
         </div>
 
         {/* Right: Floating Product Image */}
-        <div className="col-span-12 lg:col-span-5 w-full flex justify-center items-center h-full">
+        <div className="col-span-1 lg:col-span-5 w-full flex justify-center items-center h-full order-1 lg:order-2">
           <div className="relative w-full max-w-[350px]">
             <Image
               src="https://product-analysis-poc.s3.amazonaws.com/image-assets-for-website/bose-white.jpg"

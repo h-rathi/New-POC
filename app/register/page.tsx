@@ -123,8 +123,8 @@ const RegisterPage = () => {
           </h2>
         </div>
 
-        <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-[600px]">
-          <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+        <div className="mt-5 mx-auto w-full px-4 sm:px-0 sm:max-w-[600px]">
+          <div className="bg-white px-6 py-10 sm:py-12 shadow rounded-lg sm:px-12 w-full">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <Label htmlFor="name" required>First Name</Label>
@@ -135,7 +135,7 @@ const RegisterPage = () => {
                     type="text"
                     required
                     aria-required="true"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-3 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -149,7 +149,7 @@ const RegisterPage = () => {
                     type="text"
                     required
                     aria-required="true"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-3 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -164,7 +164,7 @@ const RegisterPage = () => {
                     autoComplete="email"
                     required
                     aria-required="true"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-3 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -179,7 +179,7 @@ const RegisterPage = () => {
                     autoComplete="current-password"
                     required
                     aria-required="true"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-3 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -194,7 +194,7 @@ const RegisterPage = () => {
                     autoComplete="current-password"
                     required
                     aria-required="true"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-3 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
