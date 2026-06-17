@@ -2,7 +2,7 @@
 // Role of the component: Classical hero component on home page
 // Name of the component: Hero.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.3 (Native PostHog Android tracking added)
+// Version: 1.2 (GTM dataLayer added)
 // *********************
 
 "use client";
@@ -11,8 +11,6 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import posthog from "posthog-js";
-import { Capacitor } from '@capacitor/core';
-import { Posthog } from '@capawesome/capacitor-posthog';
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
@@ -26,19 +24,9 @@ const Hero = () => {
       component: "Hero",
     }, isLoggedIn);
 
-    if (Capacitor.isNativePlatform()) {
-      Posthog.capture({
-        event: "hero_viewed",
-        properties: {
-          component: "Hero",
-          platform: "android"
-        }
-      });
-    } else {
-      posthog.capture("hero_viewed", heroViewPayload);
-    }
+    posthog.capture("hero_viewed", heroViewPayload);
 
-    // GTM dataLayer push
+    // 🔹 GTM dataLayer push (NEW)
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -51,13 +39,15 @@ const Hero = () => {
   const router = useRouter();
   const { addToCart, calculateTotals } = useProductStore();
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = () => {
+    // Analytics — Hero intent
     const ctaPayload = withIsLoggedIn({
       cta: "buy_now",
       component: "Hero",
     }, isLoggedIn);
+    posthog.capture("hero_cta_clicked", ctaPayload);
 
-    // GTM dataLayer push
+    // GTM dataLayer push (NEW)
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -66,6 +56,7 @@ const Hero = () => {
       });
     }
 
+    // Reuse existing Cart logic
     const price = 255;
     const quantityCount = 1;
 
@@ -83,55 +74,34 @@ const Hero = () => {
     calculateTotals();
     toast.success("Product added to the cart");
 
-    if (Capacitor.isNativePlatform()) {
-      // Android app — use native PostHog SDK
-      await Posthog.capture({
-        event: "hero_cta_clicked",
-        properties: { cta: "buy_now", component: "Hero", platform: "android" }
-      });
-      await Posthog.capture({
-        event: "buy_now_clicked",
-        properties: {
-          product_id: "bose-qc-45",
-          product_name: "Bose QuietComfort 45",
-          price: price,
-          quantity: quantityCount,
-          value: price * quantityCount,
-          source: "hero_section",
-          platform: "android"
-        }
-      });
-      await Posthog.capture({
-        event: "begin_checkout",
-        properties: { trigger: "buy_now", cart_value: price * quantityCount, platform: "android" }
-      });
-    } else {
-      // Browser — use web PostHog SDK
-      const buyNowPayload = withIsLoggedIn({
-        product_id: "bose-qc-45",
-        product_name: "Bose QuietComfort 45",
-        price: price,
-        quantity: quantityCount,
-        value: price * quantityCount,
-        source: "hero_section",
-      }, isLoggedIn);
-
-      posthog.capture("hero_cta_clicked", ctaPayload);
-      posthog.capture("buy_now_clicked", buyNowPayload);
-      posthog.capture("begin_checkout", withIsLoggedIn({
-        trigger: "buy_now",
-        cart_value: price * quantityCount,
-      }, isLoggedIn));
-    }
+    // Standard BuyNow analytics funnel
+    const buyNowPayload = withIsLoggedIn({
+      product_id: "bose-qc-45",
+      product_name: "Bose QuietComfort 45",
+      price: price,
+      quantity: quantityCount,
+      value: price * quantityCount,
+      source: "hero_section",
+    }, isLoggedIn);
+    
+    posthog.capture("buy_now_clicked", buyNowPayload);
+    
+    const beginCheckoutPayload = withIsLoggedIn({
+      trigger: "buy_now",
+      cart_value: price * quantityCount,
+    }, isLoggedIn);
+    
+    posthog.capture("begin_checkout", beginCheckoutPayload);
 
     router.push("/checkout");
   };
 
-  const handleLearnMore = async () => {
+  const handleLearnMore = () => {
     const ctaPayload = withIsLoggedIn({
       cta: "learn_more",
       component: "Hero",
     }, isLoggedIn);
+    posthog.capture("hero_cta_clicked", ctaPayload);
 
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
@@ -141,20 +111,11 @@ const Hero = () => {
       });
     }
 
-    if (Capacitor.isNativePlatform()) {
-      await Posthog.capture({
-        event: "hero_cta_clicked",
-        properties: { cta: "learn_more", component: "Hero", platform: "android" }
-      });
-    } else {
-      posthog.capture("hero_cta_clicked", ctaPayload);
-    }
-
     router.push("/product/bose-qc45-5");
   };
 
   return (
-    <div className="min-h-[500px] w-full bg-blue-500 h-auto overflow-hidden relative">
+    <div className="w-full bg-blue-500 min-h-[500px] lg:h-[700px] overflow-hidden relative">
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
@@ -166,30 +127,30 @@ const Hero = () => {
         }
       `}</style>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 items-center px-4 gap-x-6 gap-y-8 max-w-screen-2xl mx-auto py-10 w-full">
-
+      <div className="grid grid-cols-1 lg:grid-cols-12 items-center px-4 sm:px-10 gap-x-10 max-w-screen-2xl mx-auto h-full py-12 lg:py-0 gap-y-12 lg:gap-y-0">
+        
         {/* Left: Text & CTAs */}
-        <div className="flex flex-col gap-y-6 sm:gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
-          <h1 className="text-2xl text-white font-extrabold tracking-tight leading-[1.1] w-full pr-4">
+        <div className="flex flex-col gap-y-6 sm:gap-y-8 order-2 lg:order-1 col-span-1 lg:col-span-7 h-full justify-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl text-white font-extrabold tracking-tight leading-[1.1]">
             BOSE QUIETCOMFORT 45
           </h1>
 
-          <p className="text-blue-50 text-sm font-light w-full pr-4 leading-relaxed">
-            Iconic quiet. Comfort. And sound.
+          <p className="text-blue-50 text-lg sm:text-xl font-light max-w-2xl leading-relaxed">
+            Iconic quiet. Comfort. And sound. 
             The first noise cancelling headphones are back, with world-class quiet, lightweight materials, and proprietary acoustic technology for deep, clear audio.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-y-4 sm:gap-y-0 sm:gap-x-4 mt-2">
             <button
               onClick={handleBuyNow}
-              className="w-full sm:w-auto bg-white text-blue-600 font-bold px-6 py-3 sm:px-12 sm:py-4 rounded-full text-base sm:text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
+              className="bg-white text-blue-600 font-bold px-12 py-4 rounded-full text-lg shadow-xl hover:bg-gray-50 hover:scale-105 transition-all uppercase ease-in"
             >
               BUY NOW
             </button>
 
             <button
               onClick={handleLearnMore}
-              className="w-full sm:w-auto bg-blue-600 border border-blue-400 text-white font-bold px-6 py-3 sm:px-12 sm:py-4 rounded-full text-base sm:text-lg shadow-lg hover:bg-blue-700 hover:scale-105 transition-all uppercase ease-in"
+              className="bg-blue-600 border border-blue-400 text-white font-bold px-12 py-4 rounded-full text-lg shadow-lg hover:bg-blue-700 hover:scale-105 transition-all uppercase ease-in"
             >
               LEARN MORE
             </button>
@@ -197,8 +158,8 @@ const Hero = () => {
         </div>
 
         {/* Right: Floating Product Image */}
-        <div className="col-span-12 lg:col-span-5 w-full flex justify-center items-center h-full">
-          <div className="relative w-full max-w-[220px] sm:max-w-[280px] mx-auto">
+        <div className="col-span-1 lg:col-span-5 w-full flex justify-center items-center h-full order-1 lg:order-2">
+          <div className="relative w-full max-w-[350px]">
             <Image
               src="https://product-analysis-poc.s3.amazonaws.com/image-assets-for-website/bose-white.jpg"
               width={500}
