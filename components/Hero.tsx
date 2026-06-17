@@ -26,7 +26,7 @@ const Hero = () => {
       component: "Hero",
     }, isLoggedIn);
 
-    if (Capacitor.isNativePlatform()) {
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('CapacitorJS')) {
       Posthog.capture({
         event: "hero_viewed",
         properties: {
@@ -83,7 +83,7 @@ const Hero = () => {
     calculateTotals();
     toast.success("Product added to the cart");
 
-    if (Capacitor.isNativePlatform()) {
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('CapacitorJS')) {
       // Android app — use native PostHog SDK
       await Posthog.capture({
         event: "hero_cta_clicked",
@@ -141,7 +141,7 @@ const Hero = () => {
       });
     }
 
-    if (Capacitor.isNativePlatform()) {
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('CapacitorJS')) {
       await Posthog.capture({
         event: "hero_cta_clicked",
         properties: { cta: "learn_more", component: "Hero", platform: "android" }
@@ -213,5 +213,3 @@ const Hero = () => {
     </div>
   );
 };
-
-export default Hero;
