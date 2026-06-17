@@ -12,6 +12,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@capacitor/core": "^8.4.0",
+    "@capawesome/capacitor-posthog": "^8.4.2",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.16.1",
