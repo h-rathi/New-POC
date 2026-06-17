@@ -91,47 +91,49 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white">
+    <header className="bg-white sticky top-0 z-50 shadow-sm">
       <HeaderTop />
 
       {isCheckoutPage && <div className="h-6 bg-white" aria-hidden="true" />}
 
       {/* USER HEADER */}
       {pathname.startsWith("/admin") === false && !isCheckoutPage && (
-        <div className="h-32 bg-white flex items-center justify-between px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:h-60 max-w-screen-2xl mx-auto">
-          <Link href="/" onClick={() => trackLogoClick("user")}>
+        <div className="bg-white flex flex-wrap items-center justify-between px-4 sm:px-6 lg:px-16 py-3 lg:h-32 gap-y-3 max-w-screen-2xl mx-auto w-full">
+          <Link href="/" onClick={() => trackLogoClick("user")} className="flex-shrink-0">
             <img
               src="/logo v1 svg.svg"
               width={300}
               height={300}
               alt="singitronic logo"
-              className="relative right-5 max-[1023px]:w-56"
+              className="w-32 sm:w-48 lg:w-64 lg:relative lg:right-5"
             />
           </Link>
 
-          <SearchInput />
-
-          <div className="flex gap-x-10 items-center">
+          <div className="flex gap-x-4 sm:gap-x-10 items-center order-2 lg:order-3">
             <NotificationBell />
             <CartElement />
+          </div>
+
+          <div className="w-full lg:w-auto lg:flex-1 lg:mx-8 order-3 lg:order-2">
+            <SearchInput />
           </div>
         </div>
       )}
 
       {/* ADMIN HEADER */}
       {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-white items-center px-16 max-w-screen-2xl mx-auto max-[400px]:px-5">
+        <div className="flex flex-wrap justify-between items-center px-4 sm:px-6 lg:px-16 py-3 lg:h-32 bg-white max-w-screen-2xl mx-auto w-full">
           <Link href="/" onClick={() => trackLogoClick("admin")}>
             <Image
               src="/logo v1.png"
               width={130}
               height={130}
               alt="singitronic logo"
-              className="w-56 h-auto"
+              className="w-40 sm:w-56 h-auto"
             />
           </Link>
 
-          <div className="flex gap-x-5 items-center">
+          <div className="flex gap-x-3 sm:gap-x-5 items-center mt-2 sm:mt-0">
             <NotificationBell />
 
             <div className="dropdown dropdown-end">

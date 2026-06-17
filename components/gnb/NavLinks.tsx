@@ -7,15 +7,7 @@ import ProductDropdown from "./ProductDropdown";
 import posthog from "posthog-js";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 
-const mainCategories = [
-  { name: "Shop", href: "/shop", hasMegaMenu: true },
-  { name: "Offers", href: "/offers", highlight: true },
-  { name: "Laptops", href: "/shop?category=laptops", isDynamic: true, categorySlug: "laptops" },
-  { name: "Tablets", href: "/shop?category=tablets", isDynamic: true, categorySlug: "tablets" },
-  { name: "Cameras", href: "/shop?category=cameras", isDynamic: true, categorySlug: "cameras" },
-  { name: "Earbuds", href: "/shop?category=earbuds", isDynamic: true, categorySlug: "earbuds" },
-  { name: "Printers", href: "/shop?category=printers", isDynamic: true, categorySlug: "printers" },
-];
+import { mainCategories } from "./navigationData";
 
 export default function NavLinks() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);

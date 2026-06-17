@@ -721,7 +721,7 @@ try {
                     required
                     aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -744,7 +744,7 @@ try {
                     required
                     aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -767,7 +767,7 @@ try {
                     required
                     aria-required="true"
                     disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -790,7 +790,7 @@ try {
                     required
                     aria-required="true"
                     disabled={isSubmitting || (isLoggedIn && !!userProfile && !useDifferentName)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -848,7 +848,7 @@ try {
                       id="company"
                       name="company"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.company}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -871,7 +871,7 @@ try {
                       required
                       aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.adress}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -891,7 +891,7 @@ try {
                       id="apartment"
                       name="apartment"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.apartment}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -914,7 +914,7 @@ try {
                       required
                       aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.city}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -937,7 +937,7 @@ try {
                       required
                       aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.country}
                       onChange={(e) =>
                         setCheckoutForm({
@@ -960,7 +960,7 @@ try {
                       required
                       aria-required="true"
                       disabled={isSubmitting || (isLoggedIn && !!userProfile && !isEditingAddress)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="block w-full rounded-md border-gray-300 py-3 sm:py-2 text-base sm:text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       value={checkoutForm.postalCode}
                       onChange={(e) =>
                         setCheckoutForm({

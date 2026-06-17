@@ -76,7 +76,7 @@ const OfferBanner = () => {
   };
 
   if (loading) {
-    return <div className="h-[500px] w-full bg-blue-500 animate-pulse" />;
+    return <div className="min-h-[500px] lg:h-[700px] w-full bg-blue-500 animate-pulse" />;
   }
 
   if (!offer) {

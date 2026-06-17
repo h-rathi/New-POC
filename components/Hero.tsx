@@ -2,7 +2,7 @@
 // Role of the component: Classical hero component on home page
 // Name of the component: Hero.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.2 (GTM dataLayer added)
+// Version: 1.3 (Native PostHog Android tracking added)
 // *********************
 
 "use client";
@@ -11,6 +11,8 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import posthog from "posthog-js";
+import { Capacitor } from '@capacitor/core';
+import { Posthog } from '@capawesome/capacitor-posthog';
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
@@ -24,9 +26,19 @@ const Hero = () => {
       component: "Hero",
     }, isLoggedIn);
 
-    posthog.capture("hero_viewed", heroViewPayload);
+    if (Capacitor.isNativePlatform()) {
+      Posthog.capture({
+        event: "hero_viewed",
+        properties: {
+          component: "Hero",
+          platform: "android"
+        }
+      });
+    } else {
+      posthog.capture("hero_viewed", heroViewPayload);
+    }
 
-    // 🔹 GTM dataLayer push (NEW)
+    // GTM dataLayer push
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -39,15 +51,13 @@ const Hero = () => {
   const router = useRouter();
   const { addToCart, calculateTotals } = useProductStore();
 
-  const handleBuyNow = () => {
-    // Analytics — Hero intent
+  const handleBuyNow = async () => {
     const ctaPayload = withIsLoggedIn({
       cta: "buy_now",
       component: "Hero",
     }, isLoggedIn);
-    posthog.capture("hero_cta_clicked", ctaPayload);
 
-    // GTM dataLayer push (NEW)
+    // GTM dataLayer push
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -56,7 +66,6 @@ const Hero = () => {
       });
     }
 
-    // Reuse existing Cart logic
     const price = 255;
     const quantityCount = 1;
 
@@ -74,34 +83,55 @@ const Hero = () => {
     calculateTotals();
     toast.success("Product added to the cart");
 
-    // Standard BuyNow analytics funnel
-    const buyNowPayload = withIsLoggedIn({
-      product_id: "bose-qc-45",
-      product_name: "Bose QuietComfort 45",
-      price: price,
-      quantity: quantityCount,
-      value: price * quantityCount,
-      source: "hero_section",
-    }, isLoggedIn);
+    if (Capacitor.isNativePlatform()) {
+      // Android app — use native PostHog SDK
+      await Posthog.capture({
+        event: "hero_cta_clicked",
+        properties: { cta: "buy_now", component: "Hero", platform: "android" }
+      });
+      await Posthog.capture({
+        event: "buy_now_clicked",
+        properties: {
+          product_id: "bose-qc-45",
+          product_name: "Bose QuietComfort 45",
+          price: price,
+          quantity: quantityCount,
+          value: price * quantityCount,
+          source: "hero_section",
+          platform: "android"
+        }
+      });
+      await Posthog.capture({
+        event: "begin_checkout",
+        properties: { trigger: "buy_now", cart_value: price * quantityCount, platform: "android" }
+      });
+    } else {
+      // Browser — use web PostHog SDK
+      const buyNowPayload = withIsLoggedIn({
+        product_id: "bose-qc-45",
+        product_name: "Bose QuietComfort 45",
+        price: price,
+        quantity: quantityCount,
+        value: price * quantityCount,
+        source: "hero_section",
+      }, isLoggedIn);
 
-    posthog.capture("buy_now_clicked", buyNowPayload);
-
-    const beginCheckoutPayload = withIsLoggedIn({
-      trigger: "buy_now",
-      cart_value: price * quantityCount,
-    }, isLoggedIn);
-
-    posthog.capture("begin_checkout", beginCheckoutPayload);
+      posthog.capture("hero_cta_clicked", ctaPayload);
+      posthog.capture("buy_now_clicked", buyNowPayload);
+      posthog.capture("begin_checkout", withIsLoggedIn({
+        trigger: "buy_now",
+        cart_value: price * quantityCount,
+      }, isLoggedIn));
+    }
 
     router.push("/checkout");
   };
 
-  const handleLearnMore = () => {
+  const handleLearnMore = async () => {
     const ctaPayload = withIsLoggedIn({
       cta: "learn_more",
       component: "Hero",
     }, isLoggedIn);
-    posthog.capture("hero_cta_clicked", ctaPayload);
 
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
@@ -109,6 +139,15 @@ const Hero = () => {
         event: "hero_cta_clicked",
         ...ctaPayload,
       });
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      await Posthog.capture({
+        event: "hero_cta_clicked",
+        properties: { cta: "learn_more", component: "Hero", platform: "android" }
+      });
+    } else {
+      posthog.capture("hero_cta_clicked", ctaPayload);
     }
 
     router.push("/product/bose-qc45-5");
@@ -131,11 +170,11 @@ const Hero = () => {
 
         {/* Left: Text & CTAs */}
         <div className="flex flex-col gap-y-6 sm:gap-y-8 max-lg:order-last col-span-12 lg:col-span-7 h-full justify-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl text-white font-extrabold tracking-tight leading-[1.1]">
+          <h1 className="text-2xl text-white font-extrabold tracking-tight leading-[1.1] w-full pr-4">
             BOSE QUIETCOMFORT 45
           </h1>
 
-          <p className="text-blue-50 text-lg sm:text-xl font-light max-w-2xl leading-relaxed">
+          <p className="text-blue-50 text-sm font-light w-full pr-4 leading-relaxed">
             Iconic quiet. Comfort. And sound.
             The first noise cancelling headphones are back, with world-class quiet, lightweight materials, and proprietary acoustic technology for deep, clear audio.
           </p>
