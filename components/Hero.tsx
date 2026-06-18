@@ -22,6 +22,7 @@ const Hero = () => {
 
   // Track hero impression once
   useEffect(() => {
+    console.log("USER AGENT:", window.navigator.userAgent); 
     const heroViewPayload = withIsLoggedIn({
       component: "Hero",
     }, isLoggedIn);
