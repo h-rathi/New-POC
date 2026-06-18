@@ -11,6 +11,8 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import posthog from "posthog-js";
+import { Capacitor } from '@capacitor/core';
+import { Posthog } from '@capawesome/capacitor-posthog';
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
@@ -39,13 +41,12 @@ const Hero = () => {
   const router = useRouter();
   const { addToCart, calculateTotals } = useProductStore();
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     // Analytics — Hero intent
     const ctaPayload = withIsLoggedIn({
       cta: "buy_now",
       component: "Hero",
     }, isLoggedIn);
-    posthog.capture("hero_cta_clicked", ctaPayload);
 
     // GTM dataLayer push (NEW)
     if (typeof window !== "undefined") {
@@ -83,25 +84,25 @@ const Hero = () => {
       value: price * quantityCount,
       source: "hero_section",
     }, isLoggedIn);
-    
-    posthog.capture("buy_now_clicked", buyNowPayload);
-    
-    const beginCheckoutPayload = withIsLoggedIn({
-      trigger: "buy_now",
-      cart_value: price * quantityCount,
-    }, isLoggedIn);
-    
-    posthog.capture("begin_checkout", beginCheckoutPayload);
+
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('CapacitorJS')) {
+      await Posthog.capture({ event: "hero_cta_clicked", properties: { cta: "buy_now", component: "Hero", platform: "android" } });
+      await Posthog.capture({ event: "buy_now_clicked", properties: { product_id: "bose-qc-45", product_name: "Bose QuietComfort 45", price: price, quantity: quantityCount, value: price * quantityCount, source: "hero_section", platform: "android" } });
+      await Posthog.capture({ event: "begin_checkout", properties: { trigger: "buy_now", cart_value: price * quantityCount, platform: "android" } });
+    } else {
+      posthog.capture("hero_cta_clicked", ctaPayload);
+      posthog.capture("buy_now_clicked", buyNowPayload);
+      posthog.capture("begin_checkout", withIsLoggedIn({ trigger: "buy_now", cart_value: price * quantityCount }, isLoggedIn));
+    }
 
     router.push("/checkout");
   };
 
-  const handleLearnMore = () => {
+  const handleLearnMore = async () => {
     const ctaPayload = withIsLoggedIn({
       cta: "learn_more",
       component: "Hero",
     }, isLoggedIn);
-    posthog.capture("hero_cta_clicked", ctaPayload);
 
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
@@ -109,6 +110,12 @@ const Hero = () => {
         event: "hero_cta_clicked",
         ...ctaPayload,
       });
+    }
+
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('CapacitorJS')) {
+      await Posthog.capture({ event: "hero_cta_clicked", properties: { cta: "learn_more", component: "Hero", platform: "android" } });
+    } else {
+      posthog.capture("hero_cta_clicked", ctaPayload);
     }
 
     router.push("/product/bose-qc45-5");
@@ -128,7 +135,7 @@ const Hero = () => {
       `}</style>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 items-center px-4 sm:px-10 gap-x-10 max-w-screen-2xl mx-auto h-full py-12 lg:py-0 gap-y-12 lg:gap-y-0">
-        
+
         {/* Left: Text & CTAs */}
         <div className="flex flex-col gap-y-6 sm:gap-y-8 order-2 lg:order-1 col-span-1 lg:col-span-7 h-full justify-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl text-white font-extrabold tracking-tight leading-[1.1]">
