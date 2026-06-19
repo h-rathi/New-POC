@@ -8,15 +8,15 @@ import { handleApiError, AppError } from "@/utils/errorHandler";
 
 export const POST = async (request: Request) => {
   try {
-    // Get client IP for rate limiting
-    const clientIP = request.headers.get("x-forwarded-for") || 
-                    request.headers.get("x-real-ip") || 
-                    "unknown";
+    // Rate limiting disabled for bulk signup/login testing
+    // const clientIP = request.headers.get("x-forwarded-for") || 
+    //                 request.headers.get("x-real-ip") || 
+    //                 "unknown";
 
     // Check rate limit
-    if (!commonValidations.checkRateLimit(clientIP, 5, 15 * 60 * 1000)) {
-      throw new AppError("Too many registration attempts. Please try again later.", 429);
-    }
+    // if (!commonValidations.checkRateLimit(clientIP, 5, 15 * 60 * 1000)) {
+    //   throw new AppError("Too many registration attempts. Please try again later.", 429);
+    // }
 
     const body = await sanitizeInput.validateJsonInput(request);
 
