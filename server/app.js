@@ -30,15 +30,15 @@ const {
 } = require('./middleware/requestLogger');
 
 // Import rate limiting middleware
-// const {
-//   generalLimiter,
-//   authLimiter,
-//   registerLimiter,
-//   userManagementLimiter,
-//   uploadLimiter,
-//   searchLimiter,
-//   orderLimiter
-// } = require('./middleware/rateLimiter');
+const {
+  generalLimiter,
+  authLimiter,
+  registerLimiter,
+  userManagementLimiter,
+  uploadLimiter,
+  searchLimiter,
+  orderLimiter
+} = require('./middleware/rateLimiter');
 
 
 const {
@@ -99,23 +99,23 @@ const corsOptions = {
 };
 
 // Apply general rate limiting to all routes
-// app.use(generalLimiter);
+app.use(generalLimiter);
 
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(fileUpload());
 
 // Apply specific rate limiters to different route groups
-// app.use("/api/users", userManagementLimiter);
-// app.use("/api/search", searchLimiter);
-// app.use("/api/orders", orderLimiter);
-// app.use("/api/order-product", orderLimiter);
-// app.use("/api/images", uploadLimiter);
-// app.use("/api/main-image", uploadLimiter);
-// app.use("/api/bulk-upload", uploadLimiter);
+app.use("/api/users", userManagementLimiter);
+app.use("/api/search", searchLimiter);
+app.use("/api/orders", orderLimiter);
+app.use("/api/order-product", orderLimiter);
+app.use("/api/images", uploadLimiter);
+app.use("/api/main-image", uploadLimiter);
+app.use("/api/bulk-upload", uploadLimiter);
 
 // Apply stricter rate limiting to authentication-related routes
-// app.use("/api/users/email", authLimiter); // For login attempts via email lookup 
+app.use("/api/users/email", authLimiter); // For login attempts via email lookup 
 
 // Apply admin rate limiting to admin routes
 
