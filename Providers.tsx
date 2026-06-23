@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import React, { useEffect } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { initPushNotifications } from "@/utils/capacitorNotifications";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
@@ -20,6 +21,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       // mark to avoid re-initializing in rare rerenders
       (posthog as any).__initialized = true;
     }
+
+    // Initialize Capacitor Push Notifications and native tracking if in native shell
+    initPushNotifications();
   }, []);
 
   return (
