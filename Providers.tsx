@@ -18,6 +18,8 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       posthog.init(key, {
         api_host: host || undefined,
       });
+      const isMobileApp = navigator.userAgent.includes("SingitronicAndroidApp");
+      posthog.register({ platform: isMobileApp ? "android" : "web" });
       // mark to avoid re-initializing in rare rerenders
       (posthog as any).__initialized = true;
     }
