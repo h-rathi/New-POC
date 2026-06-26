@@ -20,6 +20,7 @@ interface Product {
 
 interface Window {
   dataLayer?: Array<Record<string, unknown>>;
+  websiteReady?: boolean;
 }
 
 interface Merchant {
