@@ -2,7 +2,7 @@
 // Role of the component: Footer component
 // Name of the component: Footer.tsx
 // Developer: Aleksandar Kuzmanovic
-// Version: 1.1 (PostHog tracking added)
+// Version: 1.2 (Crash test buttons added)
 // *********************
 
 "use client";
@@ -14,6 +14,55 @@ import React, { useEffect, useState } from "react";
 import posthog from "posthog-js";
 import apiClient from "@/lib/api";
 import { useIsLoggedInValue, withIsLoggedIn } from "@/lib/posthog-auth";
+
+// TEST ONLY — remove after testing
+const TestCrashButtons = () => {
+  const [triggerRenderCrash, setTriggerRenderCrash] = useState(false);
+
+  // Test 1: JS Error
+  const triggerJsError = () => {
+    throw new Error("Test JS crash");
+  };
+
+  // Test 2: Unhandled Promise Rejection
+  const triggerPromiseRejection = () => {
+    Promise.reject(new Error("Test promise rejection"));
+  };
+
+  // Test 3: React Render Crash — triggered by state change
+  if (triggerRenderCrash) {
+    throw new Error("Test React render crash");
+  }
+
+  return (
+    <div className="mt-10 p-4 border border-red-300 rounded-xl bg-red-50">
+      <p className="text-red-600 font-semibold mb-3 text-sm">
+        ⚠️ Test Crash Buttons — Remove before release
+      </p>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={triggerJsError}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm"
+        >
+          Test 1 — JS Error
+        </button>
+        <button
+          onClick={triggerPromiseRejection}
+          className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm"
+        >
+          Test 2 — Unhandled Promise
+        </button>
+        <button
+          onClick={() => setTriggerRenderCrash(true)}
+          className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm"
+        >
+          Test 3 — React Render Crash
+        </button>
+      </div>
+    </div>
+  );
+};
+// END TEST ONLY
 
 const Footer = () => {
   const [activeOffers, setActiveOffers] = useState<{id: string, name: string}[]>([]);
@@ -31,28 +80,27 @@ const Footer = () => {
   }, []);
 
   const trackFooterClick = (
-  label: string,
-  href: string,
-  section: string
-) => {
-  const payload = withIsLoggedIn({
-    label,
-    destination: href,
-    section,
-    component: "Footer",
-  }, isLoggedIn);
+    label: string,
+    href: string,
+    section: string
+  ) => {
+    const payload = withIsLoggedIn({
+      label,
+      destination: href,
+      section,
+      component: "Footer",
+    }, isLoggedIn);
 
-  posthog.capture("footer_link_clicked", payload);
+    posthog.capture("footer_link_clicked", payload);
 
-  // 🔹 GTM dataLayer push (NEW)
-  if (typeof window !== "undefined") {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "footer_link_clicked",
-      ...payload,
-    });
-  }
-};
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "footer_link_clicked",
+        ...payload,
+      });
+    }
+  };
 
   return (
     <footer className="bg-white" aria-labelledby="footer-heading">
@@ -178,6 +226,11 @@ const Footer = () => {
               </div>
             </div>
           </div>
+
+          {/* TEST ONLY — Remove before release */}
+          <TestCrashButtons />
+          {/* END TEST ONLY */}
+
         </div>
       </div>
     </footer>
