@@ -3,11 +3,13 @@ import { Toaster } from "react-hot-toast";
 import React, { useEffect } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { useCrashTracking } from "@/hooks/useCrashTracking"; // ADD THIS
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
+
+  useCrashTracking(); // ADD THIS — runs after posthog.init
+
   useEffect(() => {
-    // Initialize PostHog on the client once so hooks like
-    // useFeatureFlagVariantKey work throughout the app.
     if (typeof window === "undefined") return;
 
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -17,7 +19,6 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       posthog.init(key, {
         api_host: host || undefined,
       });
-      // mark to avoid re-initializing in rare rerenders
       (posthog as any).__initialized = true;
     }
   }, []);
